@@ -7,16 +7,57 @@ import React, { useEffect } from "react";
 import { 
   BookOpen, 
   ChevronLeft, 
-  Layers, 
-  HelpCircle, 
-  Award, 
-  BarChart,
-  CheckCircle2, 
+  ChevronRight,
   Play, 
-  ShieldCheck,
-  Zap
+  RotateCcw,
+  Share2,
+  Code2,
+  Database,
+  Wrench,
+  Box,
+  FileText,
+  MessageSquare
 } from "lucide-react";
 import { Subject, Chapter, UserProgress, parseProgressKey } from "../types";
+import { resolveExamForSubject } from "../../shared/exams";
+import { compareChapters } from "../../shared/sorting";
+import { getExamColorClasses } from "../lib/examTheme";
+
+function getChapterVisual(chapterName: string, index: number) {
+  const name = chapterName.toLowerCase();
+  if (name.includes("agent") || name.includes("orchestrat") || name.includes("network") || name.includes("graph") || name.includes("architecture")) {
+    return { Icon: Share2, bg: "bg-indigo-50/70", text: "text-indigo-600" };
+  }
+  if (name.includes("configuration") || name.includes("code") || name.includes("workflow") || name.includes("sort") || name.includes("algorithm") || name.includes("parsing")) {
+    return { Icon: Code2, bg: "bg-sky-50", text: "text-sky-600" };
+  }
+  if (name.includes("context") || name.includes("reliab") || name.includes("database") || name.includes("memory") || name.includes("cache") || name.includes("data")) {
+    return { Icon: Database, bg: "bg-emerald-50", text: "text-emerald-600" };
+  }
+  if (name.includes("tool design") || name.includes("tool") || name.includes("mcp integration") || name.includes("optimization") || name.includes("pipeline")) {
+    return { Icon: Wrench, bg: "bg-amber-50", text: "text-amber-600" };
+  }
+  if (name.includes("mcp & tool") || name.includes("mcp") || name.includes("system") || name.includes("operating") || name.includes("hardware") || name.includes("box")) {
+    return { Icon: Box, bg: "bg-rose-50", text: "text-rose-600" };
+  }
+  if (name.includes("structured") || name.includes("prompt") && name.includes("output") || name.includes("schema") || name.includes("doc") || name.includes("theory")) {
+    return { Icon: FileText, bg: "bg-violet-50", text: "text-violet-600" };
+  }
+  if (name.includes("extract") || name.includes("chat") || name.includes("message") || name.includes("eval") || name.includes("prompt")) {
+    return { Icon: MessageSquare, bg: "bg-teal-50", text: "text-teal-600" };
+  }
+
+  const fallbacks = [
+    { Icon: Share2, bg: "bg-indigo-50/70", text: "text-indigo-600" },
+    { Icon: Code2, bg: "bg-sky-50", text: "text-sky-600" },
+    { Icon: Database, bg: "bg-emerald-50", text: "text-emerald-600" },
+    { Icon: Wrench, bg: "bg-amber-50", text: "text-amber-600" },
+    { Icon: Box, bg: "bg-rose-50", text: "text-rose-600" },
+    { Icon: FileText, bg: "bg-violet-50", text: "text-violet-600" },
+    { Icon: MessageSquare, bg: "bg-teal-50", text: "text-teal-600" },
+  ];
+  return fallbacks[index % fallbacks.length];
+}
 
 interface SubjectViewProps {
   subject: Subject;
@@ -36,13 +77,16 @@ export default function SubjectView({ subject, progress, onBack, onSelectChapter
   }, [subject.name]);
 
   const attemptedKeys = Object.keys(progress.answeredQuestions);
+  const subExam = resolveExamForSubject(subject);
+  const subColors = getExamColorClasses(subExam);
 
   // Calculate subject-specific stats
   let totalQuestions = 0;
   let totalAttempted = 0;
   let correctCount = 0;
 
-  const chaptersWithStats = subject.chapters.map((chap) => {
+  const sortedChapters = [...subject.chapters].sort(compareChapters);
+  const chaptersWithStats = sortedChapters.map((chap) => {
     let chapAttempted = 0;
     let chapCorrect = 0;
 
@@ -81,150 +125,229 @@ export default function SubjectView({ subject, progress, onBack, onSelectChapter
     };
   });
 
+  const inProgressChapter = chaptersWithStats.find((c) => c.status === "In Progress");
+  const nextNotStartedChapter = chaptersWithStats.find((c) => c.status === "Not Started");
+  const nextChapter = inProgressChapter || nextNotStartedChapter;
+  const nextChapterIndex = nextChapter ? chaptersWithStats.findIndex((c) => c.id === nextChapter.id) + 1 : 1;
+  const allCompleted = chaptersWithStats.length > 0 && chaptersWithStats.every((c) => c.status === "Completed");
+
   const subjectAccuracy = totalAttempted > 0 ? Math.round((correctCount / totalAttempted) * 100) : 0;
   const subjectCoverage = totalQuestions > 0 ? Math.round((totalAttempted / totalQuestions) * 100) : 0;
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Subject Header */}
-      <div className="space-y-4">
+    <div className="space-y-6 animate-fade-in w-full max-w-7xl mx-auto pb-12">
+      {/* Navigation back button */}
+      <div>
         <button
           onClick={onBack}
-          className="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors gap-1 hover:-translate-x-0.5 transition-transform"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer group"
         >
-          <ChevronLeft className="w-4 h-4" /> Back to subjects
+          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          <span>Back to All Subjects</span>
         </button>
+      </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-slate-50 border border-slate-100 p-4 sm:p-6 rounded-2xl">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-bold tracking-wide uppercase rounded">
-              Subject
-            </div>
-            <h1 className="font-display text-2xl md:text-3xl font-bold text-slate-800 tracking-tight mt-1.5">
-              {subject.name}
-            </h1>
-            <p className="text-slate-400 text-xs mt-1">
-              Discovered {subject.chapters.length} chapters containing {subject.totalQuestions} potential exam questions.
-            </p>
+      {/* Subject Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div className="min-w-0 flex-1">
+          <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+            SUBJECT CURRICULUM
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+            {subject.name}
+          </h1>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
+            Curated <strong className="text-slate-800 font-semibold">{subject.chapters.length}</strong> active content chapters containing <strong className="text-slate-800 font-semibold">{subject.totalQuestions}</strong> questions total.
+          </p>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-center">
+
+          {nextChapter && !allCompleted && (
+            <button
+              onClick={() => onQuickPractice(subject.name, nextChapter)}
+              title={`${inProgressChapter ? "Resume" : "Start"}: ${nextChapter.name}`}
+              className="inline-flex items-center gap-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 px-4 py-2.5 rounded-xl transition-all shadow-3xs cursor-pointer group whitespace-nowrap"
+            >
+              <Play className="w-3.5 h-3.5 fill-white" />
+              <span>
+                {inProgressChapter 
+                  ? `Resume Q${inProgressChapter.attempted + 1}` 
+                  : "Start Practice"}
+              </span>
+              <span className="text-[10px] font-medium text-indigo-100 bg-indigo-700/70 px-1.5 py-0.5 rounded">
+                Ch {nextChapterIndex}
+              </span>
+              <ChevronRight className="w-3.5 h-3.5 text-white/80 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 4-Card Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Questions */}
+        <div className="bg-[#F8F7FF] border border-[#EDE9FE] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#EDE9FE] text-[#6366F1] flex items-center justify-center shrink-0">
+            <BookOpen className="w-5 h-5" />
           </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {totalQuestions}
+            </div>
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Total Subject MCQs
+            </div>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-6 divide-x divide-slate-100 shrink-0 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
-            <div className="text-left pr-6">
-              <span className="text-[10px] font-bold text-slate-400 tracking-wide uppercase block">Coverage</span>
-              <span className="text-2xl font-bold font-display text-slate-800 leading-none block mt-1">{subjectCoverage}%</span>
+        {/* Card 2: Attempted & Coverage */}
+        <div className="bg-[#F4FBF7] border border-[#DCFCE7] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#DCFCE7] text-[#10B981] flex items-center justify-center shrink-0">
+            <Play className="w-5 h-5 fill-[#10B981]" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {totalAttempted}
             </div>
-            <div className="text-left pl-6">
-              <span className="text-[10px] font-bold text-slate-400 tracking-wide uppercase block">Accuracy</span>
-              <span className="text-2xl font-bold font-display text-slate-800 leading-none block mt-1">{subjectAccuracy}%</span>
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Attempted ({subjectCoverage}%)
             </div>
-            <div className="text-left pl-6">
-              <span className="text-[10px] font-bold text-slate-400 tracking-wide uppercase block">Solved</span>
-              <span className="text-2xl font-bold font-display text-slate-800 leading-none block mt-1">{correctCount}</span>
+          </div>
+        </div>
+
+        {/* Card 3: Accuracy */}
+        <div className="bg-[#F4F8FE] border border-[#E0EEFD] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#E0EEFD] text-[#2563EB] flex items-center justify-center shrink-0">
+            <Box className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {subjectAccuracy}%
+            </div>
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Subject Accuracy
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Chapters */}
+        <div className="bg-[#FFF7F4] border border-[#FEE8D8] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#FEE8D8] text-[#EA580C] flex items-center justify-center shrink-0">
+            <FileText className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {subject.chapters.length}
+            </div>
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Curriculum Chapters
             </div>
           </div>
         </div>
       </div>
 
       {/* Chapters Grid */}
-      <div className="space-y-4">
-        <h3 className="font-display text-base font-bold text-slate-800 flex items-center gap-2">
-          <Layers className="w-4 h-4 text-indigo-600" /> Discovered Chapters
-        </h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+        {chaptersWithStats.map((chapter, idx) => {
+          const visual = getChapterVisual(chapter.name, idx);
+          const ChapterIcon = visual.Icon;
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {chaptersWithStats.map((chapter) => (
-            <div 
-              key={chapter.id} 
-              className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs hover:shadow-md hover:border-slate-200 transition-all flex flex-col justify-between"
+          return (
+            <div
+              key={chapter.id}
+              onClick={() => onSelectChapter(subject.name, chapter)}
+              className="bg-white border border-slate-100 hover:border-slate-300 p-5 sm:p-6 rounded-2xl shadow-3xs hover:shadow-xs transition-all cursor-pointer group flex flex-col justify-between"
             >
-              <div className="space-y-2">
-                <div className="flex justify-between items-start gap-4">
-                  <h4 className="font-display text-base font-bold text-slate-800 leading-snug line-clamp-1">
-                    {chapter.name}
-                  </h4>
-                  {chapter.status === "Completed" ? (
-                    <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-100 text-emerald-700 text-[9px] font-bold uppercase tracking-wide rounded">
-                      Completed
-                    </span>
-                  ) : chapter.status === "In Progress" ? (
-                    <span className="px-2 py-0.5 bg-amber-50 border border-amber-100 text-amber-700 text-[9px] font-bold uppercase tracking-wide rounded">
-                      In Progress
-                    </span>
-                  ) : (
-                    <span className="px-2 py-0.5 bg-slate-50 border border-slate-100 text-slate-400 text-[9px] font-bold uppercase tracking-wide rounded">
-                      Not Started
-                    </span>
-                  )}
-                </div>
+              <div>
+                <div className="flex items-start gap-4">
+                  {/* Visual Chapter Icon */}
+                  <div className={`p-3.5 rounded-2xl shrink-0 ${visual.bg} ${visual.text}`}>
+                    <ChapterIcon className="w-6 h-6" />
+                  </div>
 
-                <p className="text-slate-400 text-xs line-clamp-2 leading-relaxed">
-                  {chapter.description || "No custom description available for this content pack. Double-click the file to add one."}
-                </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                        chapter.status === "Completed"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-100 border"
+                          : chapter.status === "In Progress"
+                          ? "bg-amber-50 text-amber-700 border-amber-100 border"
+                          : `${subColors.badgeBg} ${subColors.badgeBorder} ${subColors.badgeText} border`
+                      }`}>
+                        {chapter.status === "Completed"
+                          ? "COMPLETED"
+                          : chapter.status === "In Progress"
+                          ? "IN PROGRESS"
+                          : `CHAPTER ${String(idx + 1).padStart(2, "0")}`}
+                      </span>
+                      <span className="text-xs text-slate-500 font-semibold flex items-center gap-1.5 shrink-0">
+                        <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                        {chapter.questionsCount} Questions
+                      </span>
+                    </div>
+
+                    <h3 className="font-display text-base sm:text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors mt-2 leading-snug">
+                      {chapter.name}
+                    </h3>
+
+                    <p className="text-xs text-slate-500 mt-1.5 leading-relaxed line-clamp-2">
+                      {chapter.description || (
+                        <>
+                          Auto-discovered <strong className="text-slate-800 font-semibold">{chapter.questionsCount}</strong> active practice questions containing step-by-step solutions and exam tricks.
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Progress and Action Section */}
-              <div className="mt-5 pt-4 border-t border-slate-50 space-y-4">
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-slate-50/50 p-2 rounded-xl text-center">
-                    <span className="text-[9px] font-bold text-slate-400 block tracking-wide uppercase">Questions</span>
-                    <span className="text-sm font-bold text-slate-700 block mt-0.5">{chapter.questionsCount}</span>
-                  </div>
-                  <div className="bg-slate-50/50 p-2 rounded-xl text-center">
-                    <span className="text-[9px] font-bold text-slate-400 block tracking-wide uppercase">Attempted</span>
-                    <span className="text-sm font-bold text-slate-700 block mt-0.5">{chapter.attempted}</span>
-                  </div>
-                  <div className="bg-slate-50/50 p-2 rounded-xl text-center">
-                    <span className="text-[9px] font-bold text-slate-400 block tracking-wide uppercase">Accuracy</span>
-                    <span className={`text-sm font-bold block mt-0.5 ${
-                      chapter.attempted === 0 
-                        ? "text-slate-400" 
-                        : chapter.accuracy >= 80 
-                        ? "text-emerald-600" 
-                        : chapter.accuracy >= 60 
-                        ? "text-indigo-600" 
-                        : "text-rose-500"
-                    }`}>
-                      {chapter.attempted > 0 ? `${chapter.accuracy}%` : "—"}
+              <div className="mt-6 pt-0 space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-medium">Total Coverage</span>
+                  <span className="font-bold text-slate-800 font-mono">{chapter.coverage}%</span>
+                </div>
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${chapter.coverage === 100 ? "bg-emerald-500" : subColors.solidBg}`}
+                    style={{ width: `${chapter.coverage}%` }}
+                  />
+                </div>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onQuickPractice(subject.name, chapter);
+                  }}
+                  className={`w-full mt-3 flex items-center justify-center relative font-semibold text-xs py-3 px-5 rounded-xl transition-all shadow-xs cursor-pointer group/btn ${
+                    chapter.status === "Completed"
+                      ? "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
+                      : "bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {chapter.status === "Completed" ? (
+                      <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                    ) : (
+                      <Play className="w-3.5 h-3.5 fill-white text-white" />
+                    )}
+                    <span>
+                      {chapter.status === "Completed"
+                        ? "Review Chapter"
+                        : chapter.status === "In Progress"
+                        ? `Resume Practice (Q${chapter.attempted + 1})`
+                        : "Practice"}
                     </span>
                   </div>
-                </div>
-
-                {/* Progress bar */}
-                {chapter.attempted > 0 && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] font-mono text-slate-400">
-                      <span>Chapter Coverage</span>
-                      <span>{chapter.coverage}%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full transition-all ${
-                          chapter.coverage === 100 ? "bg-emerald-500" : "bg-indigo-600"
-                        }`} 
-                        style={{ width: `${chapter.coverage}%` }} 
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onQuickPractice(subject.name, chapter)}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-colors cursor-pointer"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-white text-white" /> Practice
-                  </button>
-                  <button
-                    onClick={() => onSelectChapter(subject.name, chapter)}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-semibold text-xs py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-colors cursor-pointer"
-                  >
-                    Open chapter
-                  </button>
-                </div>
+                  <ChevronRight className={`w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform absolute right-4 ${
+                    chapter.status === "Completed" ? "text-slate-400" : "text-white/80"
+                  }`} />
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );

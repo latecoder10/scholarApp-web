@@ -94,47 +94,117 @@ export default function MistakeBook({ progress, selectedExam = "all", onClearMis
     );
   };
 
+  const lowConfidenceMistakes = filteredMistakes.filter(m => m.confidence === 'Guess').length;
+  const uniqueDomainCount = new Set(filteredMistakes.map(m => m.subject)).size;
+
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white border border-slate-150 p-4 sm:p-6 rounded-2xl shadow-xs">
-        <div className="flex items-start gap-4">
-          <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 shrink-0">
-            <AlertTriangle className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="font-display text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Mistakes</h1>
-            <p className="text-slate-500 text-xs mt-1 max-w-xl">
-              Questions you've answered incorrectly show up here. Answer one correctly and it's removed automatically.
-            </p>
-          </div>
+    <div className="space-y-6 animate-fade-in w-full max-w-7xl mx-auto pb-12">
+      {/* 1. Standard Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+            ACTIVE WEAKNESSES
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+            Mistakes
+          </h1>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
+            Questions you've answered incorrectly are cataloged here. Correct them in focused revision to clear them automatically.
+          </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 shrink-0 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
           {mistakes.length > 0 && (
             <>
               <button
+                type="button"
                 onClick={handleClearAll}
-                className="inline-flex items-center justify-center gap-1.5 border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold text-xs px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 bg-white border border-slate-200/90 text-slate-700 text-xs px-3.5 py-2 rounded-xl shadow-3xs cursor-pointer hover:bg-slate-50 transition-all"
               >
-                <Trash2 className="w-4 h-4" /> Clear all
+                <Trash2 className="w-3.5 h-3.5 text-slate-400" />
+                <span className="font-medium">Clear All</span>
               </button>
               <button
+                type="button"
                 onClick={handlePracticeMistakes}
-                className="inline-flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-3xs transition-all cursor-pointer"
               >
-                <Play className="w-4 h-4 fill-white text-white" /> Practice mistakes ({filteredMistakes.length})
+                <Play className="w-3.5 h-3.5 fill-white text-white" />
+                <span>Practice Mistakes ({filteredMistakes.length})</span>
               </button>
             </>
           )}
         </div>
       </div>
 
-      {/* Filter and Content Controls */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 self-start sm:self-center">
+      {/* 2. Top Stats Grid - Proportional, Uniform Height */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Mistakes */}
+        <div className="bg-[#FFF7F4] border border-[#FEE8D8] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#FEE8D8] text-[#EA580C] flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {filteredMistakes.length}
+            </div>
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Active Incorrect Items
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Low Confidence Flags */}
+        <div className="bg-[#F8F7FF] border border-[#EDE9FE] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#EDE9FE] text-[#6366F1] flex items-center justify-center shrink-0">
+            <Lightbulb className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {lowConfidenceMistakes}
+            </div>
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Low Confidence Guesses
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Domains Affected */}
+        <div className="bg-[#F4F8FE] border border-[#E0EEFD] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#E0EEFD] text-[#2563EB] flex items-center justify-center shrink-0">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {uniqueDomainCount}
+            </div>
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Subject Domains Impacted
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Auto-Clear Ready */}
+        <div className="bg-[#F4FBF7] border border-[#DCFCE7] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#DCFCE7] text-[#10B981] flex items-center justify-center shrink-0">
+            <CheckCircle className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              1-Tap
+            </div>
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Auto-Removes on Mastery
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Filter and Content Controls */}
+      <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-5 shadow-3xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 shrink-0">
           <Filter className="w-4 h-4 text-slate-400" />
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Subject</span>
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Filter by Subject:</span>
         </div>
         <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
           {uniqueSubjects.map((sub) => (
@@ -144,10 +214,10 @@ export default function MistakeBook({ progress, selectedExam = "all", onClearMis
                 setSelectedSubject(sub);
                 setExpandedId(null);
               }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer border ${
                 selectedSubject === sub
-                  ? "bg-slate-900 border-slate-900 text-white font-bold"
-                  : "bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                  ? "bg-slate-900 border-slate-900 text-white font-bold shadow-3xs"
+                  : "bg-slate-50 border-slate-100 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               }`}
             >
               {sub} ({sub === "All" ? mistakes.length : mistakes.filter((m) => m.subject === sub).length})
@@ -164,7 +234,7 @@ export default function MistakeBook({ progress, selectedExam = "all", onClearMis
             return (
               <div 
                 key={entry.id}
-                className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-xs hover:border-slate-200 transition-all"
+                className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-3xs hover:border-slate-200 transition-all"
               >
                 {/* Header Summary Row */}
                 <div 

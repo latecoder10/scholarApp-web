@@ -43,12 +43,7 @@ interface ChapterJSON {
 
 async function startServer() {
   const app = express();
-  // Hosts (Render, Fly, Railway, Cloud Run…) inject the port to bind on and
-  // fail their health check if it is ignored. Falls back to 3000 locally.
-  const PORT = Number(process.env.PORT) || 3000;
-
-  // Resolved once at boot; the client reads the same answer via /api/capabilities.
-  const CAPABILITIES = resolveCapabilities(process.env);
+  const PORT = 3000;
 
   /**
    * Refuse a gated route with 503 rather than letting it write to a disk that
@@ -58,7 +53,8 @@ async function startServer() {
   const requireCapability =
     (capability: keyof AppCapabilities): express.RequestHandler =>
     (req, res, next) => {
-      if (!CAPABILITIES[capability]) {
+      const currentCapabilities = resolveCapabilities(process.env);
+      if (!currentCapabilities[capability]) {
         return res.status(503).json({
           error: capabilityDisabledMessage(capability),
           capability,
@@ -148,7 +144,7 @@ async function startServer() {
   // this to decide what to render; a static deploy has no server to ask and
   // falls back to NO_CAPABILITIES on the client side.
   app.get("/api/capabilities", (req, res) => {
-    res.json(CAPABILITIES);
+    res.json(resolveCapabilities(process.env));
   });
 
   // 1. Get Discovered Subjects and Chapters metadata (Auto-discovery)
@@ -384,11 +380,12 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`CIL MT Server running on port ${PORT}`);
+    const caps = resolveCapabilities(process.env);
+    console.log(`Exam Scholar Server running on port ${PORT}`);
     console.log(
-      `Authoring capabilities — content upload: ${CAPABILITIES.contentUpload ? "on" : "off"}, ` +
-        `AI expand: ${CAPABILITIES.aiExpand ? "on" : "off"}` +
-        (CAPABILITIES.contentUpload ? "" : "  (set ENABLE_AUTHORING=true to enable)"),
+      `Authoring capabilities — content upload: ${caps.contentUpload ? "on" : "off"}, ` +
+        `AI expand: ${caps.aiExpand ? "on" : "off"}` +
+        (caps.contentUpload ? "" : "  (set ENABLE_AUTHORING=true to enable)"),
     );
   });
 }

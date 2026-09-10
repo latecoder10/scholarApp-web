@@ -514,36 +514,112 @@ export default function MockTestArena({
           return examDef.id === selectedPaperFilter;
         });
 
+        const totalMockQuestions = scopedMocks.reduce((sum, m) => sum + m.questionsCount, 0);
+        const allSyllabusTopics = Array.from(new Set(examsInScope.flatMap(e => e.mockBannerTags || e.mockSyllabusTags)));
+
         return (
-          <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <h1 className="font-display text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-                  <Award className="w-6 h-6 text-indigo-600" />
+          <div className="space-y-6 animate-fade-in pb-12 w-full max-w-7xl mx-auto">
+            {/* 1. Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+                  SIMULATOR
+                </span>
+                <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight mt-0.5">
                   Mock Tests
                 </h1>
-                <p className="text-slate-500 text-xs">
-                  Timed practice exams for {examsInScope.map(e => e.shortName).join(" and ")}.
+                <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
+                  Timed practice exams for {examsInScope.map(e => e.shortName).join(" and ")} with full performance diagnostics.
                 </p>
               </div>
-              <button
-                onClick={onRefreshContent}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-xs"
-              >
-                <RefreshCw className="w-3.5 h-3.5" /> Refresh
-              </button>
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={onRefreshContent}
+                  className="inline-flex items-center gap-2 bg-white border border-slate-200/90 text-slate-700 text-xs px-3.5 py-2 rounded-xl shadow-3xs cursor-pointer hover:bg-slate-50 transition-all"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-indigo-600" />
+                  <span className="font-medium">Refresh Content</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Top Stats Grid - Proportional, Uniform Height */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Card 1: Available Mocks */}
+              <div className="bg-[#F8F7FF] border border-[#EDE9FE] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-[#EDE9FE] text-[#6366F1] flex items-center justify-center shrink-0">
+                  <Award className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+                    {scopedMocks.length}
+                  </div>
+                  <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+                    Available Mock Series
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Total Questions */}
+              <div className="bg-[#F4F8FE] border border-[#E0EEFD] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-[#E0EEFD] text-[#2563EB] flex items-center justify-center shrink-0">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+                    {totalMockQuestions}
+                  </div>
+                  <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+                    Curated Simulation MCQs
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Standard Timer */}
+              <div className="bg-[#F4FBF7] border border-[#DCFCE7] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-[#DCFCE7] text-[#10B981] flex items-center justify-center shrink-0">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+                    60 Mins
+                  </div>
+                  <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+                    Standard Exam Window
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 4: High-Yield Topics */}
+              <div className="bg-[#FFF7F4] border border-[#FEE8D8] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-[#FEE8D8] text-[#EA580C] flex items-center justify-center shrink-0">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+                    {allSyllabusTopics.length}
+                  </div>
+                  <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+                    High-Yield Topics Covered
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Syllabus Banner */}
-            <div className="bg-indigo-50/60 border border-indigo-100 p-4 sm:p-6 rounded-2xl">
-              <div className="space-y-3 max-w-xl">
-                <h2 className="font-display text-lg font-bold text-slate-900">Every mock test includes</h2>
-                <p className="text-slate-600 text-xs leading-relaxed">
-                  A live countdown timer, a question palette to jump between and flag questions, instant scoring, and one-click export of missed questions to your Mistakes list.
+            <div className="bg-white border border-slate-100 p-5 sm:p-6 rounded-2xl shadow-3xs">
+              <div className="space-y-2.5 max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#4F46E5]" />
+                  <h2 className="font-display text-base font-bold text-slate-900">Official Exam Simulation Engine</h2>
+                </div>
+                <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
+                  Real exam conditions with live countdown timers, a question palette to flag and jump between items, instant scoring, and one-click export of missed questions to your Mistakes book.
                 </p>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {Array.from(new Set(examsInScope.flatMap(e => e.mockBannerTags || e.mockSyllabusTags))).map((topic) => (
-                    <span key={topic} className="text-[11px] font-medium bg-white text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-md">
+                <div className="flex flex-wrap gap-1.5 pt-1.5">
+                  {allSyllabusTopics.map((topic) => (
+                    <span key={topic} className="text-[11px] font-semibold bg-[#F8F7FF] text-indigo-700 border border-[#EDE9FE] px-2.5 py-0.5 rounded-md">
                       {topic}
                     </span>
                   ))}
@@ -555,16 +631,16 @@ export default function MockTestArena({
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
               {/* Left Sidebar Sections */}
               <div className="lg:col-span-1 space-y-4">
-                <div className="bg-white border border-slate-150 p-4 rounded-2xl space-y-3 shadow-xs">
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide block border-b border-slate-100 pb-2">
-                    Filter
+                <div className="bg-white border border-slate-100 p-4 sm:p-5 rounded-2xl space-y-3 shadow-3xs">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wide block border-b border-slate-100 pb-2.5">
+                    Filter Series
                   </h3>
                   <nav className="flex flex-row lg:flex-col gap-1.5 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
                     <button
                       onClick={() => setSelectedPaperFilter("All")}
-                      className={`w-full text-left px-3.5 py-2.5 min-h-11 sm:min-h-0 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
+                      className={`w-full text-left px-3.5 py-2.5 min-h-11 sm:min-h-0 rounded-xl text-xs font-bold transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
                         selectedPaperFilter === "All"
-                          ? "bg-indigo-600 text-white shadow-xs"
+                          ? "bg-indigo-600 text-white shadow-3xs"
                           : "text-slate-600 hover:bg-slate-50"
                       }`}
                     >
@@ -583,13 +659,13 @@ export default function MockTestArena({
                         <button
                           key={opt.value}
                           onClick={() => setSelectedPaperFilter(opt.value)}
-                          className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
+                          className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between gap-2 shrink-0 cursor-pointer ${
                             isActive
-                              ? `${optColors.solidBg} text-white shadow-xs`
+                              ? `${optColors.solidBg} text-white shadow-3xs`
                               : "text-slate-600 hover:bg-slate-50"
                           }`}
                         >
-                          <span>{opt.label}</span>
+                          <span className="truncate">{opt.label}</span>
                           <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
                             isActive ? "bg-white/20 text-white" : "bg-slate-150 text-slate-500"
                           }`}>
@@ -602,12 +678,12 @@ export default function MockTestArena({
                 </div>
 
                 {/* Strategy Insight Card */}
-                <div className="bg-indigo-50/50 border border-indigo-100 p-4 rounded-2xl hidden lg:block space-y-2">
-                  <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-wide block">
-                    Tip
+                <div className="bg-[#F8F7FF] border border-[#EDE9FE] p-4 rounded-2xl hidden lg:block space-y-2">
+                  <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wide block">
+                    Simulation Tip
                   </span>
-                  <p className="text-[11px] text-indigo-950/80 leading-relaxed font-semibold">
-                    The timer and question palette match the real exam. Flag questions you're unsure of and come back to them before submitting.
+                  <p className="text-xs text-indigo-950/80 leading-relaxed">
+                    The timer and question palette match the real exam. Flag questions you're unsure of and return to them before submitting.
                   </p>
                 </div>
               </div>
@@ -636,29 +712,29 @@ export default function MockTestArena({
                       return (
                         <div
                           key={exam.id}
-                          className="bg-white border border-slate-150 hover:border-indigo-300 rounded-2xl p-4 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-6 group"
+                          className="bg-white border border-slate-100 hover:border-indigo-200 rounded-2xl p-5 sm:p-6 shadow-3xs hover:shadow-2xs transition-all flex flex-col justify-between space-y-5 group"
                         >
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <span className={`inline-flex items-center gap-1 border text-[9px] font-mono font-bold px-2.5 py-0.5 rounded ${cardColors.badgeBg} ${cardColors.badgeBorder} ${cardColors.badgeText}`}>
+                              <span className={`inline-flex items-center gap-1 border text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-lg ${cardColors.badgeBg} ${cardColors.badgeBorder} ${cardColors.badgeText}`}>
                                 {badgeLabel}
                               </span>
-                              <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1 font-semibold">
+                              <span className="text-xs font-mono text-slate-400 flex items-center gap-1.5 font-medium">
                                 <Clock className="w-3.5 h-3.5 text-slate-400" />
                                 {exam.durationMinutes} Mins
                               </span>
                             </div>
 
-                            <h4 className="font-display text-base font-extrabold text-slate-800 group-hover:text-indigo-600 transition-colors">
+                            <h4 className="font-display text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
                               {exam.name}
                             </h4>
-                            <p className="text-xs text-slate-500 leading-relaxed">
+                            <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
                               {exam.description}
                             </p>
 
-                            <div className="flex flex-wrap gap-1 pt-1">
+                            <div className="flex flex-wrap gap-1.5 pt-1">
                               {exam.syllabus.slice(0, 4).map(s => (
-                                <span key={s} className="text-[9px] font-mono bg-slate-50 text-slate-600 border border-slate-100 px-1.5 py-0.5 rounded">
+                                <span key={s} className="text-[10px] font-medium bg-slate-50 text-slate-600 border border-slate-150 px-2 py-0.5 rounded-md">
                                   {s}
                                 </span>
                               ))}
@@ -666,12 +742,12 @@ export default function MockTestArena({
                           </div>
 
                           <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
-                            <div className="text-[10px] font-mono text-slate-500">
-                              Total Items: <strong className="text-slate-800 font-bold">{exam.questionsCount} MCQs</strong>
+                            <div className="text-xs text-slate-500">
+                              Pool: <strong className="text-slate-800 font-bold font-mono">{exam.questionsCount} MCQs</strong>
                             </div>
                             <button
                               onClick={() => handleSelectMock(exam)}
-                              className={`inline-flex items-center gap-2 text-xs font-extrabold text-white px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl shadow-xs transition-all cursor-pointer ${cardColors.solidBg} ${cardColors.solidHoverBg}`}
+                              className={`inline-flex items-center gap-2 text-xs font-bold text-white px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl shadow-3xs transition-all cursor-pointer ${cardColors.solidBg} ${cardColors.solidHoverBg}`}
                             >
                               Start Exam <Play className="w-3 h-3 text-white fill-white" />
                             </button>
@@ -1065,17 +1141,17 @@ export default function MockTestArena({
         <div className="space-y-6 animate-fade-in">
           
           {/* Main Results Board */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 shadow-sm space-y-6">
+          <div className="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 md:p-8 shadow-3xs space-y-6 max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-6 gap-4">
               <div className="space-y-1">
-                <div className="text-[9px] font-bold font-mono text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded uppercase tracking-wider inline-block">
+                <div className="text-[10px] font-bold font-mono text-indigo-600 bg-[#F8F7FF] border border-[#EDE9FE] px-2.5 py-0.5 rounded-md uppercase tracking-wider inline-block">
                   Simulation Finished
                 </div>
-                <h1 className="font-display text-2xl font-bold text-slate-800 tracking-tight">
+                <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                   Performance Diagnostics Hub
                 </h1>
-                <p className="text-slate-400 text-xs">
-                  Reviewing diagnostics for: <strong>{selectedMock.name}</strong>
+                <p className="text-slate-500 text-xs sm:text-sm">
+                  Reviewing diagnostics for: <strong className="text-slate-800">{selectedMock.name}</strong>
                 </p>
               </div>
               <button
@@ -1085,40 +1161,40 @@ export default function MockTestArena({
                   setSavedExamResult(null);
                   setVisibleReviewsCount(15);
                 }}
-                className="text-xs font-bold font-mono text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2.5 rounded-xl hover:bg-indigo-100 transition-colors"
+                className="text-xs font-bold text-slate-700 bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-3xs hover:bg-slate-50 transition-all cursor-pointer"
               >
-                Return to Arena Dashboard
+                Return to Mock Tests
               </button>
             </div>
 
             {/* Results Grid Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl text-center space-y-1.5">
-                <span className="text-[10px] font-mono text-slate-400 font-semibold uppercase block">FINAL SCORE</span>
-                <span className="text-3xl font-display font-extrabold text-slate-800">
-                  {savedExamResult.score} <span className="text-sm font-normal text-slate-400">/ {savedExamResult.total} Marks</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-[#F8F7FF] border border-[#EDE9FE] p-4 sm:p-5 rounded-2xl shadow-3xs text-center space-y-1">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide block">Final Score</span>
+                <span className="text-2xl sm:text-3xl font-display font-extrabold text-slate-900">
+                  {savedExamResult.score} <span className="text-sm font-medium text-slate-400">/ {savedExamResult.total} Marks</span>
                 </span>
               </div>
-              <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl text-center space-y-1.5">
-                <span className="text-[10px] font-mono text-slate-400 font-semibold uppercase block">ACCURACY</span>
-                <span className="text-3xl font-display font-extrabold text-emerald-600">
+              <div className="bg-[#F4F8FE] border border-[#E0EEFD] p-4 sm:p-5 rounded-2xl shadow-3xs text-center space-y-1">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide block">Accuracy</span>
+                <span className="text-2xl sm:text-3xl font-display font-extrabold text-[#2563EB]">
                   {savedExamResult.accuracy}%
                 </span>
               </div>
-              <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl text-center space-y-1.5">
-                <span className="text-[10px] font-mono text-slate-400 font-semibold uppercase block">TIME SPENT</span>
-                <span className="text-3xl font-display font-extrabold text-indigo-600">
+              <div className="bg-[#F4FBF7] border border-[#DCFCE7] p-4 sm:p-5 rounded-2xl shadow-3xs text-center space-y-1">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide block">Time Spent</span>
+                <span className="text-2xl sm:text-3xl font-display font-extrabold text-[#10B981]">
                   {formatTime(savedExamResult.timeSpentSeconds)}
                 </span>
               </div>
-              <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl text-center space-y-1.5">
-                <span className="text-[10px] font-mono text-slate-400 font-semibold uppercase block">PERFORMANCE GRADE</span>
-                <span className={`text-sm font-display font-extrabold block pt-2 uppercase ${
+              <div className="bg-[#FFF7F4] border border-[#FEE8D8] p-4 sm:p-5 rounded-2xl shadow-3xs text-center space-y-1">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide block">Diagnostic Grade</span>
+                <span className={`text-xl sm:text-2xl font-display font-extrabold block uppercase ${
                   savedExamResult.accuracy >= 80 
-                    ? "text-emerald-600" 
+                    ? "text-[#10B981]" 
                     : savedExamResult.accuracy >= 60 
-                    ? "text-indigo-600" 
-                    : "text-rose-600"
+                    ? "text-[#2563EB]" 
+                    : "text-[#EA580C]"
                 }`}>
                   {savedExamResult.accuracy >= 85
                     ? "Excellent"
@@ -1130,8 +1206,8 @@ export default function MockTestArena({
             </div>
 
             {/* Subject wise Diagnostics breakdown */}
-            <div className="space-y-3.5">
-              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Breakdown by Subject</h3>
+            <div className="space-y-3.5 pt-2">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wide">Breakdown by Domain</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {Object.entries(savedExamResult.subjectStats).map(([subj, statValue]) => {
                   const stat = statValue as { total: number; correct: number };

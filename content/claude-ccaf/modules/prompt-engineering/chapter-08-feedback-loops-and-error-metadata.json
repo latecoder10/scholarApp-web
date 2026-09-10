@@ -1,8 +1,8 @@
 {
-  "subject": "Claude CCAF: Prompt Engineering & Extraction",
-  "chapter": "2.8 Feedback Loops, Error Metadata & Iterative Refinement",
+  "subject": "Claude CCAF: Prompt Engineering & Structured Output",
+  "chapter": "4.8 Feedback Loops, Error Metadata & Iterative Refinement",
   "exam": "Claude CCAF",
-  "paper": "Domain-2",
+  "paper": "Domain-4",
   "description": "NEW TOPIC. Capturing structured metadata about model errors and feeding those patterns back into prompts, schemas and few-shot examples; plus verification loops, batched issue reporting, and structured MCP error handling. Grounded in the official Claude Code and Claude API documentation.",
   "questions": [
     {
@@ -20,7 +20,12 @@
       "explanation": "A feedback loop is only as useful as the structure of what it records. To improve a prompt, a schema, or a few-shot set you need to answer questions like 'which FIELD fails most often', 'in which SOURCE FORMAT', and 'what KIND of error was it — fabricated, misread, wrong format, wrong unit'. Free text answers none of those without manual reading. Structured metadata turns individual corrections into a distribution you can act on: a field failing 40% of the time on one vendor's layout points at a few-shot example; a field failing on every vendor points at the schema or the field description.\n\n**Why the others are wrong**\n\n- **B.** Volume is not the constraint; three months of corrections is plenty. Structure is the constraint.\n- **C.** Fine-tuning is not the documented improvement path here; the loop feeds prompts, schemas, and few-shot examples.\n- **D.** Storing whole documents adds storage without adding the categorical dimensions you need to aggregate on.",
       "examTrick": "Feedback loop questions hinge on STRUCTURED metadata — field, category, format, before/after — not on volume or storage.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Feedback Loops", "Structured Metadata", "Error Categorisation"]
+      "tags": [
+        "NEW TOPIC",
+        "Feedback Loops",
+        "Structured Metadata",
+        "Error Categorisation"
+      ]
     },
     {
       "id": 2,
@@ -37,7 +42,12 @@
       "explanation": "The distribution of errors tells you which lever to pull. A failure concentrated in one source format is a demonstration problem: the model has not seen how that layout maps to your schema, and a few-shot example is the documented remedy. This is exactly why the feedback metadata must record source format — without it, this pattern is invisible and the team would guess.\n\n**Why the others are wrong**\n\n- **B.** Nullability represents genuine absence. Using it to paper over a systematic misread converts a fixable extraction failure into permanent data loss.\n- **C.** Abandoning a field because one vendor's layout is unfamiliar is a large regression for a narrow, addressable cause.\n- **D.** Higher temperature increases variance, not accuracy.\n\nContrast the diagnosis: a field failing uniformly across ALL formats points at the schema or the field description instead.",
       "examTrick": "Errors concentrated in one format = few-shot example. Errors spread across all formats = schema or field description.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Error Pattern Diagnosis", "Few-Shot Examples", "Targeted Improvement"]
+      "tags": [
+        "NEW TOPIC",
+        "Error Pattern Diagnosis",
+        "Few-Shot Examples",
+        "Targeted Improvement"
+      ]
     },
     {
       "id": 3,
@@ -54,7 +64,12 @@
       "explanation": "Uniform fabrication of a required non-nullable field is the signature of a schema that offers no legal way to express absence. Under grammar-constrained sampling the model must satisfy the type, so it produces something. No amount of prompt wording fixes this; the fix is structural — make the field nullable, or add an 'not_present' status.\n\n**Why the others are wrong**\n\n- **B.** Inconsistent formatting is a normalization-instruction problem: state the target format explicitly and show it in an example.\n- **C.** Prose before JSON is an output-method problem, solved by moving from prompt-based JSON to structured outputs or tool use with a schema.\n- **D.** Format-specific accuracy variation points at few-shot coverage, as in the previous item.\n\nThe skill being tested is routing a symptom to the right layer: schema, prompt, few-shot set, or output method.",
       "examTrick": "Map symptom → layer. Uniform fabrication = schema. Formatting drift = instructions. Prose leakage = output method. Format-specific = few-shot.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Symptom Routing", "Schema vs Prompt", "Fabrication Signature"]
+      "tags": [
+        "NEW TOPIC",
+        "Symptom Routing",
+        "Schema vs Prompt",
+        "Fabrication Signature"
+      ]
     },
     {
       "id": 4,
@@ -71,7 +86,12 @@
       "explanation": "The documented pattern pairs concrete examples with specific feedback. The docs' own before/after: 'implement a function that validates email addresses' becomes 'write a validateEmail function. example test cases: user@example.com is true, invalid is false, user@.com is false. run the tests after implementing.' Concrete cases give the model something to check itself against; naming the specific failure tells it what to change.\n\n**Why the others are wrong**\n\n- **B.** Repetition without new information is the 'correcting over and over' failure pattern; after two failed corrections the docs say to /clear and rewrite the prompt.\n- **C.** Vague prompts have an exploratory use, but not when you already know the output is wrong in a specific way.\n- **D.** One-at-a-time correction burns turns and fills context with partial fixes; consolidating issues lets them be evaluated together and avoids fixes that conflict with each other.",
       "examTrick": "Iterative refinement = concrete examples + specific failure naming + BATCHED issues. Not repetition, not one-at-a-time.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Iterative Refinement", "Batched Feedback", "Concrete Examples"]
+      "tags": [
+        "NEW TOPIC",
+        "Iterative Refinement",
+        "Batched Feedback",
+        "Concrete Examples"
+      ]
     },
     {
       "id": 5,
@@ -88,7 +108,12 @@
       "explanation": "'Claude stops when the work looks done. Without a check it can run, looks done is the only signal available, and you become the verification loop: every mistake waits for you to notice it. Give Claude something that produces a pass or fail, and the loop closes on its own.' The check can be a test suite, a build exit code, a linter, a script diffing against a fixture, or a browser screenshot compared to a design.\n\n**Why the others are wrong**\n\n- **B.** Running checks costs tokens; the benefit is correctness, not economy.\n- **C.** No such gating exists.\n- **D.** A check enables iteration toward correctness; it does not guarantee first-attempt success.\n\nThe docs add: have Claude show EVIDENCE rather than asserting success — the test output, the command and its return, or a screenshot.",
       "examTrick": "'Claude stops when the work LOOKS done' is the quotable premise. A runnable check closes the loop without you.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Verification Loop", "Evidence", "Self-Correction"]
+      "tags": [
+        "NEW TOPIC",
+        "Verification Loop",
+        "Evidence",
+        "Self-Correction"
+      ]
     },
     {
       "id": 6,
@@ -105,7 +130,12 @@
       "explanation": "The docs present exactly this ladder: 'In one prompt: ask Claude to run the check and iterate in the same message. Across a session: set the check as a /goal condition. A separate evaluator re-checks it after every turn and Claude keeps working until the goal resolves. As a deterministic gate: a Stop hook runs your check as a script and blocks the turn from ending until it passes.' They add that 'Each step trades setup for attention.'\n\n**Why the others are wrong**\n\n- **B, C.** Both misorder the ladder; a prompt instruction is the weakest gate because Claude can decide it is finished.\n- **D.** They differ fundamentally in enforcement, not just setup.\n\nOne operational detail worth memorising: 'Claude Code overrides the hook and ends the turn after 8 consecutive blocks' — the deterministic gate is not infinitely deterministic.",
       "examTrick": "Prompt < /goal < Stop hook. And the Stop hook gives up after 8 consecutive blocks.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Stop Hook", "/goal", "Determinism Ladder"]
+      "tags": [
+        "NEW TOPIC",
+        "Stop Hook",
+        "/goal",
+        "Determinism Ladder"
+      ]
     },
     {
       "id": 7,
@@ -122,7 +152,12 @@
       "explanation": "An agent decides its next step from what the tool tells it. Recoverability is the decisive bit: a rate limit is transient and should be retried after a delay, whereas a malformed-argument error should be corrected and a permission error should be escalated. A structured error carrying the error type, a recoverability flag, and a suggested next action lets the agent take the right branch instead of guessing.\n\n**Why the others are wrong**\n\n- **B.** A generic failure forces the agent to guess between retry, correct, and escalate. It commonly retries a permanent failure or abandons a transient one.\n- **C.** Silently reporting success turns a recoverable failure into corrupted downstream reasoning — the worst option, because the error becomes invisible.\n- **D.** A raw stack trace is unstructured, consumes context, and may leak internal details; the agent still has to infer recoverability from prose.",
       "examTrick": "Good MCP errors carry: error TYPE + RECOVERABILITY + SUGGESTED NEXT ACTION. Generic messages and silent successes both fail.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "MCP Error Handling", "Recoverability", "Agent Decision-Making"]
+      "tags": [
+        "NEW TOPIC",
+        "MCP Error Handling",
+        "Recoverability",
+        "Agent Decision-Making"
+      ]
     },
     {
       "id": 8,
@@ -139,7 +174,12 @@
       "explanation": "Tool selection is driven by the descriptions the model sees, so ambiguity in the descriptions produces ambiguity in selection. The fix is to make each description carry what distinguishes it: concrete use cases, expected input shapes, and an explicit statement of when to prefer this tool over the similar one. The same principle appears in the Claude Code docs for skills: 'If descriptions are vague or overlap, Claude may load the wrong skill or miss one that would help.'\n\n**Why the others are wrong**\n\n- **B.** Removing capability to avoid a description problem is a regression, and it fails when both tools are genuinely needed.\n- **C.** Numeric suffixes make names distinct without making PURPOSES distinct; the model still cannot tell which fits.\n- **D.** tool_choice forces a tool for a request you already know the answer for. It cannot make an autonomous agent choose correctly across varied requests.",
       "examTrick": "Wrong-tool selection = a description problem. Add use cases, input formats, and explicit 'prefer this over X when...' guidance.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Tool Descriptions", "Disambiguation", "Tool Selection Reliability"]
+      "tags": [
+        "NEW TOPIC",
+        "Tool Descriptions",
+        "Disambiguation",
+        "Tool Selection Reliability"
+      ]
     },
     {
       "id": 9,
@@ -156,7 +196,12 @@
       "explanation": "Random sampling spends reviewer time in proportion to volume rather than in proportion to risk, so most reviewed items are ones the model got right while genuinely uncertain extractions go unseen. Targeted routing spends the same budget where error probability is highest. This is also why confidence and ambiguity flags must be declared in the extraction schema — you cannot route on a signal you did not capture.\n\n**Why the others are wrong**\n\n- **B.** Statistically unbiased, operationally wasteful; it is a measurement strategy, not a quality-control strategy.\n- **C.** Aggregate accuracy does not tell you which individual extractions are wrong, and error rates drift as document mixes change.\n- **D.** Under structured outputs schema violations essentially do not occur; the dangerous errors are schema-VALID and wrong. Relying on validation failures catches almost nothing.",
       "examTrick": "Route on confidence + document characteristics + field ambiguity. Random sampling and schema-failure-only are both wrong answers.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Human Review Routing", "Confidence-Based", "Risk Targeting"]
+      "tags": [
+        "NEW TOPIC",
+        "Human Review Routing",
+        "Confidence-Based",
+        "Risk Targeting"
+      ]
     },
     {
       "id": 10,
@@ -173,7 +218,12 @@
       "explanation": "'Add a Stop hook that proposes updates: a Stop hook receives the path to the session transcript when Claude finishes responding, so a script can review the session and propose CLAUDE.md updates while the gap it exposed is fresh.' This is a feedback loop over your own configuration — the same principle as mining extraction errors, applied to instructions.\n\n**Why the others are wrong**\n\n- **B.** PreToolUse fires before every tool call, far too often, and it is a gate rather than a reflection point.\n- **C.** Auto memory writes to ~/.claude/projects/<project>/memory/, not to CLAUDE.md, and it explicitly 'skips anything your CLAUDE.md files already say.'\n- **D.** /init generates a starting file or suggests improvements on demand; it is not transcript-driven.\n\nThe docs pair this with two other maintenance practices: review CLAUDE.md edits in pull requests, and revisit instructions after major model releases, since workarounds for an older model's limitation become overhead.",
       "examTrick": "Stop hook gets the TRANSCRIPT PATH — that is what makes session-retrospective automation possible.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Stop Hook", "Transcript", "Config Feedback Loop"]
+      "tags": [
+        "NEW TOPIC",
+        "Stop Hook",
+        "Transcript",
+        "Config Feedback Loop"
+      ]
     },
     {
       "id": 11,
@@ -190,7 +240,12 @@
       "explanation": "'A reviewer prompted to find gaps will usually report some, even when the work is sound, because that is what it was asked to do. Chasing every finding leads to over-engineering: extra abstraction layers, defensive code, and tests for cases that can't happen. Tell the reviewer to flag only gaps that affect correctness or the stated requirements, and treat the rest as optional.'\n\n**Why the others are wrong**\n\n- **B.** Finding count is not a quality signal; it is partly an artifact of the prompt.\n- **C.** The reviewer does see the diff — 'sees only the diff and the criteria you give it, not the reasoning that produced the change', which is the source of its value.\n- **D.** This is the over-engineering trap the docs name explicitly.",
       "examTrick": "Adversarial reviewers over-report by construction. Constrain them to correctness and stated requirements, or you over-engineer.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Adversarial Review", "Over-Engineering", "Finding Calibration"]
+      "tags": [
+        "NEW TOPIC",
+        "Adversarial Review",
+        "Over-Engineering",
+        "Finding Calibration"
+      ]
     },
     {
       "id": 12,
@@ -207,7 +262,12 @@
       "explanation": "This is the docs' own before/after pair under 'Address root causes, not symptoms', where 'the build is failing' is the before and this is the after. It carries three things: the concrete error text, a verification step, and an explicit instruction not to suppress.\n\n**Why the others are wrong**\n\n- **B.** The documented 'before' — no error text, no verification, no constraint on the fix.\n- **C.** No success criterion and no error information; invites trial-and-error that fills context.\n- **D.** Suppression is precisely the failure mode the instruction exists to prevent, and it hides the signal a feedback loop needs.",
       "examTrick": "Paste the actual error + demand verification + forbid suppression. All three in the documented pattern.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Root Cause", "Verification", "Prompt Patterns"]
+      "tags": [
+        "NEW TOPIC",
+        "Root Cause",
+        "Verification",
+        "Prompt Patterns"
+      ]
     },
     {
       "id": 13,
@@ -224,7 +284,12 @@
       "explanation": "A feedback loop needs a metric at the same granularity as the change. A schema change targets specific fields, so per-field correction rate is what can show improvement; segmenting by source format guards against a change that helps one vendor while hurting another — an aggregate number would hide that entirely. Comparing before and after on the same dimension is what makes the loop closed rather than merely instrumented.\n\n**Why the others are wrong**\n\n- **B.** Volume measures throughput, not quality.\n- **C.** Latency is an operational metric unaffected by extraction correctness.\n- **D.** Field count is a proxy for simplicity, not for accuracy, and reducing it usually means collecting less data rather than collecting it better.",
       "examTrick": "Measure at the granularity of the change, segmented by the dimension you might regress. Aggregates hide format-specific regressions.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Evaluation Metrics", "Per-Field Measurement", "Segmentation"]
+      "tags": [
+        "NEW TOPIC",
+        "Evaluation Metrics",
+        "Per-Field Measurement",
+        "Segmentation"
+      ]
     },
     {
       "id": 14,
@@ -241,7 +306,12 @@
       "explanation": "An explicit human escalation request is a standing instruction, and it outranks the agent's own judgement about whether it could have resolved the ambiguity. The general principle is that irreversible or outward-facing actions require confirmation unless the agent has durable authorization — and here the user has specifically withheld that authorization.\n\n**Why the others are wrong**\n\n- **B.** Attempting first is exactly what the user asked not to happen, and by the time the attempt fails the irreversible action may already have occurred.\n- **C.** Documenting an assumption after the fact is appropriate for reversible work, not for an action the user asked to gate.\n- **D.** Terminating discards the accumulated context and findings. Escalation means handing off with a structured summary of state, findings, and what decision is needed — not abandoning the work.",
       "examTrick": "An explicit escalation request is honored IMMEDIATELY. Escalate with a structured handoff, never by terminating.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Escalation Criteria", "Human-in-the-Loop", "Handoff"]
+      "tags": [
+        "NEW TOPIC",
+        "Escalation Criteria",
+        "Human-in-the-Loop",
+        "Handoff"
+      ]
     },
     {
       "id": 15,
@@ -258,7 +328,12 @@
       "explanation": "'Revisit after major model releases: instructions that worked around an older model's limitation may become overhead once a newer model handles the case on its own. For example, a rule that forces single-file refactors can be deleted once the limitation is gone.' Accumulated instructions are not free — they consume context and, per the docs, 'If your CLAUDE.md is too long, Claude ignores half of it because important rules get lost in the noise.'\n\n**Why the others are wrong**\n\n- **B.** Freezing forfeits every future improvement and leaves obsolete workarounds in place.\n- **C.** This is the documented 'over-specified CLAUDE.md' failure pattern, whose fix is to 'Ruthlessly prune.'\n- **D.** More examples cost context and can over-anchor the model on the demonstrated cases; examples should target observed failure patterns, not grow monotonically.",
       "examTrick": "Feedback loops must PRUNE as well as add. Old workarounds become noise that crowds out live rules.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Instruction Pruning", "Model Upgrades", "Loop Maintenance"]
+      "tags": [
+        "NEW TOPIC",
+        "Instruction Pruning",
+        "Model Upgrades",
+        "Loop Maintenance"
+      ]
     },
     {
       "id": 16,
@@ -275,7 +350,12 @@
       "explanation": "The loop is closed only when all four steps are present. Structure enables aggregation; aggregation reveals which layer is at fault (schema, prompt instruction, few-shot set, or output method); the change targets that layer specifically; and re-measurement at the same granularity confirms the change worked and did not regress another segment. Skipping any step breaks the loop — unstructured capture cannot aggregate, and aggregate-only measurement cannot confirm a targeted fix.\n\n**Why the others are wrong**\n\n- **B.** Retraining is not the documented improvement path; the loop feeds prompts, schemas, and few-shot examples.\n- **C.** One instruction per error grows an unmaintainable prompt and never diagnoses which layer is actually at fault.\n- **D.** Random sampling plus aggregate accuracy cannot localise a fault, and temperature is not a correctness lever.",
       "examTrick": "Four steps: structured capture → pattern aggregation → targeted layer change → same-granularity re-measurement.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Feedback Loop Design", "Closed Loop", "Layer Diagnosis"]
+      "tags": [
+        "NEW TOPIC",
+        "Feedback Loop Design",
+        "Closed Loop",
+        "Layer Diagnosis"
+      ]
     }
   ]
 }

@@ -21,9 +21,22 @@ import {
   GraduationCap,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  RotateCcw,
   Trash2,
   Sparkles,
-  Smartphone
+  Smartphone,
+  Share2,
+  Code2,
+  Database,
+  Wrench,
+  Box,
+  FileText,
+  MessageSquare,
+  ArrowLeft,
+  CheckCircle2,
+  PanelLeftClose,
+  PanelLeftOpen
 } from "lucide-react";
 
 import { Subject, Chapter, Question, UserProgress, UserAnswerSubmission } from "./types";
@@ -39,6 +52,7 @@ import MockTestArena from "./components/MockTestArena";
 import MobileAppHub from "./components/MobileAppHub";
 import ExamSelectorModal from "./components/ExamSelectorModal";
 import { EXAM_REGISTRY, ExamDefinition, getExamById, resolveExamForSubject, resolveExamForEntry } from "../shared/exams";
+import { compareSubjects, compareChapters } from "../shared/sorting";
 import { getExamIcon, getExamColorClasses, ExamColorClasses } from "./lib/examTheme";
 import { getProgressStore } from "./lib/progressStore";
 import { getCapabilities } from "./lib/capabilityStore";
@@ -52,7 +66,7 @@ const navItems = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, path: "/" },
   { id: "subjects", name: "Subjects", icon: BookOpen, path: "/subjects" },
   { id: "mock-tests", name: "Mock Tests", icon: Award, path: "/mock-tests" },
-  { id: "mistakes", name: "Mistakes", icon: AlertTriangle, path: "/mistakes" },
+  { id: "mistakes", name: "Mistakes", icon: AlertTriangle, path: "/mistakes", badgeKey: "mistakes" as const },
   { id: "revision", name: "Revision", icon: RefreshCw, path: "/revision" },
   { id: "analytics", name: "Analytics", icon: BarChart, path: "/analytics" },
   { id: "mobile-app", name: "Mobile App", icon: Smartphone, path: "/mobile-app" },
@@ -64,6 +78,42 @@ const navItems = [
 // and only used here, but declared at module scope (not nested closures)
 // so they don't remount on every App() render.
 // ---------------------------------------------------------------------------
+
+function getSubjectVisual(subjectName: string, index: number) {
+  const name = subjectName.toLowerCase();
+  if (name.includes("agent") || name.includes("orchestrat") || name.includes("network") || name.includes("architecture")) {
+    return { Icon: Share2, bg: "bg-indigo-50/70", text: "text-indigo-600" };
+  }
+  if (name.includes("configuration") || name.includes("code") || name.includes("workflow") || name.includes("compiler") || name.includes("algorithm")) {
+    return { Icon: Code2, bg: "bg-sky-50", text: "text-sky-600" };
+  }
+  if (name.includes("context") || name.includes("reliab") || name.includes("database") || name.includes("data")) {
+    return { Icon: Database, bg: "bg-emerald-50", text: "text-emerald-600" };
+  }
+  if (name.includes("tool design") || name.includes("integration") || name.includes("organization")) {
+    return { Icon: Wrench, bg: "bg-amber-50", text: "text-amber-600" };
+  }
+  if (name.includes("mcp & tool") || name.includes("mcp") || name.includes("operating") || name.includes("system")) {
+    return { Icon: Box, bg: "bg-rose-50", text: "text-rose-600" };
+  }
+  if (name.includes("structured") || name.includes("output") || name.includes("doc") || name.includes("theory")) {
+    return { Icon: FileText, bg: "bg-violet-50", text: "text-violet-600" };
+  }
+  if (name.includes("extract") || name.includes("chat") || name.includes("message") || name.includes("prompt")) {
+    return { Icon: MessageSquare, bg: "bg-teal-50", text: "text-teal-600" };
+  }
+
+  const fallbacks = [
+    { Icon: Share2, bg: "bg-indigo-50/70", text: "text-indigo-600" },
+    { Icon: Code2, bg: "bg-sky-50", text: "text-sky-600" },
+    { Icon: Database, bg: "bg-emerald-50", text: "text-emerald-600" },
+    { Icon: Wrench, bg: "bg-amber-50", text: "text-amber-600" },
+    { Icon: Box, bg: "bg-rose-50", text: "text-rose-600" },
+    { Icon: FileText, bg: "bg-violet-50", text: "text-violet-600" },
+    { Icon: MessageSquare, bg: "bg-teal-50", text: "text-teal-600" },
+  ];
+  return fallbacks[index % fallbacks.length];
+}
 
 interface SubjectsPageProps {
   subjects: Subject[];
@@ -91,36 +141,50 @@ function SubjectsPage({
 
   // Filter Curriculum Subjects (excluding raw mock test folders from regular curriculum list)
   const curriculumSubjects = useMemo(
-    () => subjects.filter(s => s.name !== "Mock Tests" && !s.name.toLowerCase().includes("mock")),
+    () =>
+      subjects
+        .filter((s) => s.name !== "Mock Tests" && !s.name.toLowerCase().includes("mock"))
+        .slice()
+        .sort(compareSubjects),
     [subjects]
   );
 
   const filteredCurriculumSubjects = useMemo(
     () =>
-      curriculumSubjects.filter((s) => {
-        if (selectedExam === "all") return true;
-        return resolveExamForSubject(s).id === selectedExam;
-      }),
+      curriculumSubjects
+        .filter((s) => {
+          if (selectedExam === "all") return true;
+          return resolveExamForSubject(s).id === selectedExam;
+        })
+        .slice()
+        .sort(compareSubjects),
     [curriculumSubjects, selectedExam]
   );
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb matching screenshot */}
+      <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+        <span>{activeExamConfig.shortName}</span>
+        <ChevronRight className="w-3 h-3 text-slate-400" />
+        <span className="text-slate-500">SUBJECTS</span>
+      </div>
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
-          <h1 className="font-display text-2xl font-bold text-slate-800 tracking-tight">
+          <h1 className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">
             Subjects
           </h1>
-          <p className="text-slate-400 text-xs">
+          <p className="text-slate-500 text-xs">
             Chapters and practice questions for {activeExamConfig.name}.
           </p>
         </div>
 
         <button
           onClick={onOpenExamSelector}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-xl hover:bg-indigo-100 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50/70 border border-indigo-200/80 px-3.5 py-1.5 rounded-xl hover:bg-indigo-100 transition-colors shadow-3xs cursor-pointer"
         >
-          <Sparkles className="w-3.5 h-3.5" /> {activeExamConfig.shortName}
+          <Sparkles className="w-3.5 h-3.5 text-indigo-600" /> {activeExamConfig.shortName}
         </button>
       </div>
 
@@ -192,19 +256,22 @@ function SubjectsPage({
       {filteredCurriculumSubjects.length > 0 ? (
         <>
           {(() => {
-            const activeShownSubjects = filteredCurriculumSubjects.filter(sub => {
-              if (selectedExam === "all") {
-                return selectedPaperTab === "all" || resolveExamForSubject(sub).id === selectedPaperTab;
-              }
-              if (activeExamConfig.papers && activeExamConfig.papers.length > 0) {
-                return selectedPaperTab === "all" || sub.paper === selectedPaperTab;
-              }
-              return true;
-            });
+            const activeShownSubjects = filteredCurriculumSubjects
+              .filter(sub => {
+                if (selectedExam === "all") {
+                  return selectedPaperTab === "all" || resolveExamForSubject(sub).id === selectedPaperTab;
+                }
+                if (activeExamConfig.papers && activeExamConfig.papers.length > 0) {
+                  return selectedPaperTab === "all" || sub.paper === selectedPaperTab;
+                }
+                return true;
+              })
+              .slice()
+              .sort(compareSubjects);
 
             return activeShownSubjects.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {activeShownSubjects.map((sub) => {
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {activeShownSubjects.map((sub, idx) => {
                   const attemptedKeys = Object.keys(progress.answeredQuestions);
                   let subAttempted = 0;
                   attemptedKeys.forEach((k) => {
@@ -213,6 +280,8 @@ function SubjectsPage({
                   const coveragePct = sub.totalQuestions > 0 ? Math.round((subAttempted / sub.totalQuestions) * 100) : 0;
                   const subExam = resolveExamForSubject(sub);
                   const subColors = getExamColorClasses(subExam);
+                  const visual = getSubjectVisual(sub.name, idx);
+                  const DomainIcon = visual.Icon;
                   const subBadgeLabel = sub.paper
                     ? `${subExam.shortName}: ${subExam.papers?.find(p => p.id === sub.paper)?.label || sub.paper}`
                     : `${subExam.shortName} Domain`;
@@ -221,43 +290,82 @@ function SubjectsPage({
                     <div
                       key={sub.name}
                       onClick={() => navigate(`/subjects/${encodeURIComponent(sub.name)}`)}
-                      className="bg-white border border-slate-150 hover:border-indigo-300 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                      className="bg-white border border-slate-200/80 hover:border-indigo-300 p-6 rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
                     >
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide border ${subColors.badgeBg} ${subColors.badgeBorder} ${subColors.badgeText}`}>
-                            {subBadgeLabel}
+                      <div>
+                        <div className="flex items-start gap-4">
+                          {/* Visual Domain Icon */}
+                          <div className={`p-3.5 rounded-2xl shrink-0 ${visual.bg} ${visual.text}`}>
+                            <DomainIcon className="w-6 h-6" />
                           </div>
-                          <span className="text-xs text-slate-400 font-semibold">
-                            {sub.chapters.length} Chapters
-                          </span>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${subColors.badgeBg} ${subColors.badgeBorder} ${subColors.badgeText} border`}>
+                                {subBadgeLabel}
+                              </span>
+                              <span className="text-xs text-slate-500 font-semibold flex items-center gap-1.5 shrink-0">
+                                <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                                {sub.chapters.length} Chapters
+                              </span>
+                            </div>
+
+                            <h3 className="font-display text-base sm:text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors mt-2 leading-snug">
+                              {sub.name}
+                            </h3>
+
+                            <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                              Auto-discovered <strong className="text-slate-800 font-semibold">{sub.chapters.length}</strong> active content chapters containing <strong className="text-slate-800 font-semibold">{sub.totalQuestions}</strong> questions total.
+                            </p>
+                          </div>
                         </div>
-                        <h3 className="font-display text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
-                          {sub.name}
-                        </h3>
-                        <p className="text-xs text-slate-500 line-clamp-2">
-                          Auto-discovered <strong>{sub.chapters.length}</strong> active content chapters containing <strong>{sub.totalQuestions}</strong> questions total.
-                        </p>
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-slate-100 space-y-3">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-slate-400">Total Coverage</span>
-                          <span className="font-semibold text-slate-700">{coveragePct}%</span>
+                      <div className="mt-6 pt-0 space-y-3">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-slate-500 font-medium">Total Coverage</span>
+                          <span className="font-bold text-slate-800 font-mono">{coveragePct}%</span>
                         </div>
-                        <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${subColors.solidBg}`} style={{ width: `${coveragePct}%` }} />
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const chap = pickChapterForSubject(sub);
-                            if (chap) onQuickPractice(sub.name, chap);
-                          }}
-                          className="w-full inline-flex items-center justify-center gap-1.5 min-h-11 sm:min-h-0 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs py-2.5 rounded-xl transition-colors cursor-pointer"
-                        >
-                          <Play className="w-3.5 h-3.5 fill-white text-white" /> Practice
-                        </button>
+
+                        {(() => {
+                          const chap = pickChapterForSubject(sub);
+                          const isFullyDone = coveragePct === 100;
+                          const isStarted = subAttempted > 0;
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (chap) onQuickPractice(sub.name, chap);
+                              }}
+                              className={`w-full mt-3 flex items-center justify-center relative font-semibold text-xs py-3 px-5 rounded-xl transition-all shadow-xs cursor-pointer group/btn ${
+                                isFullyDone
+                                  ? "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
+                                  : "bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                {isFullyDone ? (
+                                  <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                                ) : (
+                                  <Play className="w-3.5 h-3.5 fill-white text-white" />
+                                )}
+                                <span>
+                                  {isFullyDone
+                                    ? "Review Domain"
+                                    : isStarted && chap
+                                    ? `Continue: ${chap.name}`
+                                    : "Practice"}
+                                </span>
+                              </div>
+                              <ChevronRight className={`w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform absolute right-4 ${
+                                isFullyDone ? "text-slate-400" : "text-white/80"
+                              }`} />
+                            </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   );
@@ -457,6 +565,7 @@ export default function App() {
     chapterName: string;
     subject: string;
     startIndex: number;
+    clearPreviousAnswers?: boolean;
   } | null>(null);
 
   // Main workspace scroll container ref
@@ -478,7 +587,14 @@ export default function App() {
   // Fetch all curriculum subjects & chapters (Auto Discovery API)
   const fetchCurriculum = async () => {
     try {
-      setSubjects(await fetchSubjects());
+      const data = await fetchSubjects();
+      const sorted = (data || [])
+        .map((s) => ({
+          ...s,
+          chapters: (s.chapters || []).slice().sort(compareChapters),
+        }))
+        .sort(compareSubjects);
+      setSubjects(sorted);
     } catch (e) {
       console.error("Error fetching discovered content packs", e);
     }
@@ -569,7 +685,8 @@ export default function App() {
     chapterId: string,
     chapterName: string,
     subject: string,
-    startIndex: number = 0
+    startIndex: number = 0,
+    clearPreviousAnswers: boolean = false
   ) => {
     setActiveSession({
       questions,
@@ -578,6 +695,7 @@ export default function App() {
       chapterName,
       subject,
       startIndex,
+      clearPreviousAnswers,
     });
     navigate("/practice-session");
   };
@@ -591,40 +709,94 @@ export default function App() {
   };
 
   // Pick which chapter to jump into for a subject-level "Practice" shortcut:
-  // prefer one with recent activity, else the first with unanswered questions, else the first chapter.
+  // 1. If recent chapter in this subject is unfinished, resume it.
+  // 2. If recent chapter was finished, automatically advance to the NEXT unfinished chapter in sequence.
+  // 3. Otherwise, pick the first unfinished chapter in sequence.
+  // 4. If all chapters are 100% completed, pick the chapter with lowest accuracy / most mistakes to review.
   const pickChapterForSubject = (sub: Subject): Chapter | null => {
     if (sub.chapters.length === 0) return null;
-    for (const recent of progress.recentActivity) {
-      if (recent.subject === sub.name) {
-        const match = sub.chapters.find((c) => c.id === recent.chapterId);
-        if (match) return match;
+    const attemptedKeys = Object.keys(progress.answeredQuestions);
+
+    const isChapFinished = (chap: Chapter) => {
+      if (chap.questionsCount <= 0) return false;
+      const attempted = attemptedKeys.filter((k) => k.startsWith(`${sub.name}:${chap.id}:`)).length;
+      return attempted >= chap.questionsCount;
+    };
+
+    // 1. Check recent activity in this subject
+    const recent = progress.recentActivity.find((r) => r.subject === sub.name);
+    if (recent) {
+      const recentIndex = sub.chapters.findIndex((c) => c.id === recent.chapterId);
+      if (recentIndex !== -1) {
+        const recentChap = sub.chapters[recentIndex];
+        // If the recent chapter is still in progress (not finished), resume it!
+        if (!isChapFinished(recentChap)) {
+          return recentChap;
+        }
+        // If the recent chapter WAS finished, seamlessly advance to the NEXT unfinished chapter!
+        for (let i = recentIndex + 1; i < sub.chapters.length; i++) {
+          if (!isChapFinished(sub.chapters[i])) {
+            return sub.chapters[i];
+          }
+        }
+        // Also check any preceding chapters if user had skipped any:
+        for (let i = 0; i < recentIndex; i++) {
+          if (!isChapFinished(sub.chapters[i])) {
+            return sub.chapters[i];
+          }
+        }
       }
     }
-    const attemptedKeys = Object.keys(progress.answeredQuestions);
+
+    // 2. Otherwise, find the first unfinished chapter in sequence:
     for (const chap of sub.chapters) {
-      const attempted = attemptedKeys.filter((k) => k.startsWith(`${sub.name}:${chap.id}:`)).length;
-      if (attempted < chap.questionsCount) return chap;
+      if (!isChapFinished(chap)) {
+        return chap;
+      }
     }
-    return sub.chapters[0];
+
+    // 3. If all chapters in the domain are completed, pick the chapter with lowest accuracy:
+    let lowestAccChap: Chapter | null = null;
+    let lowestAcc = 101;
+    for (const chap of sub.chapters) {
+      const prefix = `${sub.name}:${chap.id}:`;
+      const chapKeys = attemptedKeys.filter((k) => k.startsWith(prefix));
+      let correct = 0;
+      chapKeys.forEach((k) => {
+        if (progress.answeredQuestions[k]?.isCorrect) correct++;
+      });
+      const acc = chapKeys.length > 0 ? (correct / chapKeys.length) * 100 : 100;
+      if (acc < lowestAcc) {
+        lowestAcc = acc;
+        lowestAccChap = chap;
+      }
+    }
+
+    return lowestAccChap || sub.chapters[0];
   };
 
   // Skip the chapter-detail screen and jump straight into a practice session,
   // resuming at the first question this chapter hasn't been answered yet.
-  const handleQuickPractice = async (subjectName: string, chapter: Chapter) => {
+  const handleQuickPractice = async (subjectName: string, chapter: Chapter, retake: boolean = false) => {
     try {
       const data = await fetchChapter(subjectName, chapter.id);
-      const chapterQuestions = shuffled((data.questions || []) as Question[]);
+      const chapterQuestions = (data.questions || []) as Question[];
       const firstUnanswered = chapterQuestions.findIndex(
         (q) => !progress.answeredQuestions[`${subjectName}:${chapter.id}:${q.id}`]
       );
+      const isComplete = firstUnanswered < 0;
       handleStartSession(
         chapterQuestions,
         "practice",
         chapter.id,
         chapter.name,
         subjectName,
-        firstUnanswered < 0 ? 0 : firstUnanswered
+        isComplete ? 0 : firstUnanswered,
+        retake
       );
+      if (isComplete && !retake) {
+        showToastNotification(`All questions in "${chapter.name}" are completed. Reviewing chapter.`);
+      }
     } catch (e) {
       console.error("Quick practice failed", e);
       showToastNotification("Couldn't start practice — please try again.");
@@ -738,6 +910,28 @@ export default function App() {
     [progress.mistakes, selectedExam]
   );
 
+  // Overall questions and accuracy stats for the topbar / sidebar
+  const totalQuestionsCount = useMemo(() => {
+    let count = 0;
+    for (const s of subjects) {
+      for (const c of s.chapters) {
+        count += c.questionsCount || 0;
+      }
+    }
+    return count;
+  }, [subjects]);
+
+  const totalAnswered = useMemo(() => {
+    return Object.keys(progress.answeredQuestions || {}).length;
+  }, [progress.answeredQuestions]);
+
+  const overallAccuracy = useMemo(() => {
+    const answered = Object.values(progress.answeredQuestions || {});
+    if (answered.length === 0) return 0;
+    const correct = answered.filter((a) => a.isCorrect).length;
+    return Math.round((correct / answered.length) * 100);
+  }, [progress.answeredQuestions]);
+
   const isCollapsed = sidebarCollapsed && !isMobile;
   const headerInfo = getHeaderInfo();
   const HeaderIcon = headerInfo.icon;
@@ -746,37 +940,34 @@ export default function App() {
     <div className="h-dvh overflow-hidden bg-slate-50/50 flex flex-col md:flex-row font-sans text-slate-700 antialiased">
 
       {/* 1. Mobile Top Navigation Bar */}
-      <div className="md:hidden bg-slate-50 border-b border-slate-200 sticky top-0 z-30 shrink-0 shadow-3xs p-4 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-600 shadow-3xs">
-            <ActiveExamIcon className={`w-5 h-5 ${activeExamColors.iconText}`} />
+      <div className="md:hidden bg-slate-50 border-b border-slate-200 sticky top-0 z-30 shrink-0 h-16 px-4 flex items-center justify-between shadow-3xs">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className={`p-2 rounded-xl border ${activeExamColors.iconBg} ${activeExamColors.iconBorder} ${activeExamColors.iconText} shadow-3xs shrink-0`}>
+            <ActiveExamIcon className="w-5 h-5" />
           </div>
-          <div>
-            <span className="font-display font-extrabold tracking-tight text-sm text-slate-900 block leading-none">
+          <div className="min-w-0">
+            <span className="font-display font-bold tracking-tight text-sm text-slate-900 block leading-tight truncate">
               Exam Scholar
             </span>
-            <button
-              onClick={() => setShowExamModal(true)}
-              className="text-[10px] font-mono font-bold text-indigo-600 uppercase tracking-wider block py-2 -my-1 hover:underline text-left cursor-pointer"
-            >
-              {activeExamConfig.shortName} ▾
-            </button>
+            <span className="text-[10px] font-mono font-bold text-indigo-600 uppercase tracking-wider block truncate">
+              {activeExamConfig.shortName}
+            </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Refresh lives here on phones — the desktop topbar below is hidden
-              at this width, so this is the only copy of each control. */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={handleRefreshAll}
             disabled={refreshing}
-            className="inline-flex items-center justify-center min-h-11 min-w-11 bg-white border border-slate-200 rounded-xl text-indigo-600 disabled:opacity-50 active:bg-slate-100 transition-all cursor-pointer"
+            className="inline-flex items-center justify-center min-h-11 min-w-11 bg-white border border-slate-200 rounded-xl text-indigo-600 disabled:opacity-50 active:bg-slate-100 transition-all cursor-pointer shadow-3xs"
             title={refreshing ? "Refreshing…" : "Refresh"}
+            aria-label="Refresh content"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="inline-flex items-center justify-center min-h-11 min-w-11 hover:bg-slate-100 border border-slate-200 active:bg-slate-200 rounded-xl text-slate-600 transition-all cursor-pointer"
+            className="inline-flex items-center justify-center min-h-11 min-w-11 hover:bg-slate-100 border border-slate-200 active:bg-slate-200 rounded-xl text-slate-600 transition-all cursor-pointer shadow-3xs"
+            aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -792,101 +983,76 @@ export default function App() {
       )}
 
       {/* 2. Responsive Left Sidebar Navigation */}
-      <div className={`
-        fixed inset-y-0 left-0 z-40 bg-slate-50 text-slate-700 flex flex-col justify-between border-r border-slate-200
-        transition-all duration-300 ease-in-out transform md:translate-x-0 md:static md:inset-auto md:h-full shrink-0
-        ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
+      <aside className={`
+        fixed inset-y-0 left-0 z-40 bg-slate-50 text-slate-700 flex flex-col justify-between border-r border-slate-200/90
+        transition-all duration-300 ease-in-out transform md:translate-x-0 md:static md:inset-auto md:h-full shrink-0 select-none
+        ${mobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full md:shadow-none"}
         ${isCollapsed ? "w-64 md:w-20" : "w-64"}
       `}>
         <div className="flex flex-col flex-1 min-h-0">
-          {/* Sidebar Brand Header */}
-          <div className={`h-[74px] border-b border-slate-200 flex items-center shrink-0 transition-all ${
-            isCollapsed ? "justify-center px-4" : "justify-between px-6"
+          {/* Unified Sidebar Header & Workspace Track Switcher */}
+          <div className={`border-b border-slate-200/80 flex items-center shrink-0 transition-all ${
+            isCollapsed ? "h-16 justify-center px-3" : "h-16 justify-between px-3"
           }`}>
-            <div className="flex items-center gap-2.5 min-w-0">
-              {isCollapsed ? (
-                // A collapsed rail is only 80px wide — there is no room for the
-                // chevron toggle beside the brand badge, so the badge itself is
-                // the way back out, swapping to a chevron on hover to say so.
-                <button
-                  onClick={() => setSidebarCollapsed(false)}
-                  className="relative group p-2 bg-indigo-50 border border-indigo-100/60 rounded-xl shadow-xs hover:bg-indigo-100 hover:border-indigo-200 transition-all cursor-pointer shrink-0"
-                  title="Expand Sidebar"
-                >
-                  <ActiveExamIcon
-                    className={`w-6 h-6 ${activeExamColors.iconText} transition-opacity group-hover:opacity-0`}
-                  />
-                  <ChevronRight className="w-5 h-5 text-indigo-600 absolute inset-0 m-auto opacity-0 transition-opacity group-hover:opacity-100" />
-                </button>
-              ) : (
-                <div className="p-2 bg-indigo-50 border border-indigo-100/60 rounded-xl shadow-xs text-indigo-600 shrink-0">
-                  <ActiveExamIcon className={`w-6 h-6 ${activeExamColors.iconText}`} />
-                </div>
-              )}
-              {!isCollapsed && (
-                <div className="min-w-0 animate-fade-in">
-                  <h2 className="font-display font-bold text-base tracking-tight leading-none text-slate-900 truncate">
-                    Exam Scholar
-                  </h2>
-                  <button
-                    onClick={() => setShowExamModal(true)}
-                    className="text-[9px] font-mono text-indigo-600 hover:text-indigo-700 font-bold block py-1.5 -my-0.5 tracking-wider uppercase truncate text-left cursor-pointer"
-                    title="Click to Switch Exam Track"
-                  >
-                    {activeExamConfig.shortName} ▾
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Collapse toggle on desktop — expanding is handled by the brand
-                badge above, which is all that fits once the rail is collapsed. */}
-            {!isCollapsed && (
-              <button
-                onClick={() => setSidebarCollapsed(true)}
-                className="hidden md:flex p-1.5 hover:bg-slate-150 border border-slate-200/80 rounded-lg text-slate-400 hover:text-slate-700 transition-all cursor-pointer shadow-3xs shrink-0"
-                title="Collapse Sidebar"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            )}
-
-            {/* Close button on mobile */}
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="md:hidden inline-flex items-center justify-center min-h-11 min-w-11 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 active:bg-slate-200 transition-all cursor-pointer shrink-0"
-              title="Close Menu"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Quick Track Switcher Pill */}
-          {!isCollapsed && (
-            <div className="px-4 pt-3">
+            {isCollapsed ? (
               <button
                 onClick={() => setShowExamModal(true)}
-                className="w-full flex items-center justify-between p-2.5 bg-indigo-50/70 hover:bg-indigo-100/70 border border-indigo-100 rounded-xl transition-all cursor-pointer text-left group"
+                className={`p-2 rounded-xl border ${activeExamColors.iconBg} ${activeExamColors.iconBorder} ${activeExamColors.iconText} hover:scale-105 shadow-3xs transition-all cursor-pointer`}
+                title={`Active Track: ${activeExamConfig.shortName} (Click to switch)`}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                  <span className="text-[11px] font-mono font-bold text-indigo-900 truncate">
-                    {activeExamConfig.shortName}
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono font-semibold text-indigo-600 bg-white/80 border border-indigo-200/60 px-1.5 py-0.5 rounded shadow-3xs group-hover:bg-white">
-                  Switch
-                </span>
+                <ActiveExamIcon className="w-5 h-5" />
               </button>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center justify-between w-full gap-1 min-w-0">
+                <button
+                  onClick={() => setShowExamModal(true)}
+                  className="flex items-center gap-2.5 min-w-0 p-1.5 -ml-1 rounded-xl hover:bg-slate-200/60 transition-all text-left group cursor-pointer flex-1"
+                  title="Click to switch exam track"
+                >
+                  <div className={`p-2 rounded-xl border ${activeExamColors.iconBg} ${activeExamColors.iconBorder} ${activeExamColors.iconText} shadow-3xs shrink-0 group-hover:scale-105 transition-transform`}>
+                    <ActiveExamIcon className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold block leading-none">
+                      Exam Scholar
+                    </span>
+                    <div className="flex items-center gap-1 mt-1 min-w-0">
+                      <span className="font-display font-bold text-xs text-slate-900 group-hover:text-indigo-600 transition-colors truncate block leading-tight">
+                        {activeExamConfig.shortName}
+                      </span>
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-500 shrink-0 transition-transform group-hover:translate-y-0.5" />
+                    </div>
+                  </div>
+                </button>
 
-          {/* Navigation Links */}
-          <nav className={`p-4 flex-1 overflow-y-auto ${isCollapsed ? "space-y-3" : "space-y-1.5"}`}>
+                {/* Single collapse toggle on desktop */}
+                <button
+                  onClick={() => setSidebarCollapsed(true)}
+                  className="hidden md:flex p-1.5 hover:bg-slate-200/60 rounded-lg text-slate-400 hover:text-slate-700 border border-transparent hover:border-slate-200 transition-all cursor-pointer shrink-0"
+                  title="Collapse sidebar"
+                >
+                  <PanelLeftClose className="w-4 h-4" />
+                </button>
+
+                {/* Close button on mobile */}
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="md:hidden p-2 hover:bg-slate-200/60 rounded-lg text-slate-500 active:bg-slate-200 transition-colors cursor-pointer shrink-0"
+                  title="Close Menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Clean Navigation Links */}
+          <nav className={`p-3 flex-1 overflow-y-auto ${isCollapsed ? "space-y-2" : "space-y-1"}`}>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
-              const badge = item.id === "mistakes" ? activeMistakes.length : undefined;
+              const badge = item.badgeKey === "mistakes" ? activeMistakes.length : undefined;
+
               return (
                 <button
                   key={item.id}
@@ -898,32 +1064,32 @@ export default function App() {
                   }}
                   className={`w-full flex items-center transition-all cursor-pointer ${
                     isCollapsed
-                      ? "justify-center p-3 rounded-xl"
-                      : "justify-between px-4 py-3 rounded-xl"
+                      ? "justify-center p-2.5 rounded-xl relative"
+                      : "justify-between px-3 py-2 rounded-xl"
                   } text-xs font-semibold ${
                     isActive
-                      ? "bg-indigo-600 text-white font-bold shadow-xs shadow-indigo-600/15 hover:bg-indigo-700"
-                      : "text-slate-600 hover:text-indigo-600 hover:bg-slate-150"
+                      ? "bg-indigo-600 text-white shadow-xs shadow-indigo-600/20 font-bold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 font-medium"
                   }`}
                 >
-                  <div className={`flex items-center ${isCollapsed ? "justify-center relative" : "gap-3"} min-w-0`}>
+                  <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-2.5"} min-w-0`}>
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-500"}`} />
                     {!isCollapsed && <span className="truncate">{item.name}</span>}
-
-                    {/* Corner badge overlay for collapsed mode */}
-                    {isCollapsed && badge !== undefined && badge > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 bg-rose-500 text-white text-[8px] font-bold font-mono rounded-full flex items-center justify-center border border-white">
-                        {badge}
-                      </span>
-                    )}
                   </div>
 
-                  {!isCollapsed && badge !== undefined && badge > 0 && (
-                    <span className={`px-1.5 py-0.5 text-[9px] font-mono font-bold rounded shrink-0 ${
-                      isActive ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600 border border-slate-300/40"
-                    }`}>
-                      {badge}
-                    </span>
+                  {/* Badges */}
+                  {badge !== undefined && badge > 0 && (
+                    isCollapsed ? (
+                      <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-rose-500 text-white text-[8px] font-bold font-mono rounded-full flex items-center justify-center border-2 border-slate-50 shadow-xs">
+                        {badge > 99 ? "99+" : badge}
+                      </span>
+                    ) : (
+                      <span className={`px-1.5 py-0.2 text-[9px] font-mono font-bold rounded shrink-0 ${
+                        isActive ? "bg-white/20 text-white" : "bg-rose-100 text-rose-700 border border-rose-200/60"
+                      }`}>
+                        {badge}
+                      </span>
+                    )
                   )}
                 </button>
               );
@@ -932,34 +1098,47 @@ export default function App() {
         </div>
 
         {/* Sidebar Footer Operations */}
-        <div className={`border-t border-slate-200 shrink-0 bg-slate-100/50 transition-all ${
-          isCollapsed ? "p-3 space-y-3 text-center" : "p-4 space-y-3"
+        <div className={`border-t border-slate-200/80 bg-slate-100/50 shrink-0 transition-all ${
+          isCollapsed ? "p-2 space-y-2 flex flex-col items-center text-center" : "p-3 space-y-2"
         }`}>
-          <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-2"}`} title="Content up to date">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-            {!isCollapsed && (
-              <span className="text-[11px] font-medium text-slate-500 truncate">
-                Content up to date
-              </span>
-            )}
-          </div>
-          <button
-            onClick={handleClearProgress}
-            title={isCollapsed ? "Reset progress" : undefined}
-            className={`w-full text-rose-600 hover:text-rose-700 transition-all cursor-pointer flex items-center justify-center ${
-              isCollapsed
-                ? "p-2.5 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl"
-                : "px-4 py-2 min-h-11 md:min-h-0 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-xl text-left text-xs font-semibold"
-            }`}
-          >
-            {isCollapsed ? (
-              <Trash2 className="w-4 h-4 text-rose-500" />
-            ) : (
-              <span className="truncate">Reset progress</span>
-            )}
-          </button>
+          {!isCollapsed ? (
+            <>
+              <div className="flex items-center justify-between px-2 py-1 text-[11px] text-slate-500">
+                <div className="flex items-center gap-2 min-w-0" title="All curriculum data up to date">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="truncate font-medium text-slate-600">Curriculum Ready</span>
+                </div>
+                <span className="font-mono text-[10px] text-slate-400 font-semibold shrink-0">
+                  {totalQuestionsCount} Qs
+                </span>
+              </div>
+
+              <button
+                onClick={handleClearProgress}
+                className="group w-full text-slate-500 hover:text-rose-600 hover:bg-rose-50/70 border border-transparent hover:border-rose-100 rounded-lg py-1.5 px-2.5 text-xs font-medium transition-all flex items-center gap-2 cursor-pointer"
+                title="Clear all saved answers and test history"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600 shrink-0" />
+                <span className="truncate">Reset progress</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 my-1 shrink-0" title="Curriculum ready and synced" />
+              <button
+                onClick={handleClearProgress}
+                className="group p-2 hover:bg-rose-50 hover:text-rose-600 text-slate-400 rounded-lg transition-colors cursor-pointer"
+                title="Reset progress"
+              >
+                <Trash2 className="w-4 h-4 group-hover:text-rose-600" />
+              </button>
+            </>
+          )}
         </div>
-      </div>
+      </aside>
 
       {/* 3. Main Workspace Area */}
       <div
@@ -968,52 +1147,71 @@ export default function App() {
         className="flex-1 flex flex-col min-w-0 overflow-y-auto scroll-smooth"
       >
 
-        {/* Dynamic Topbar — desktop only. On phones the mobile bar above is the
-            single header; every page already renders its own title, so showing
-            both stacked just repeated the same words twice. */}
-        <header className="bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 sm:py-4 hidden md:flex justify-between items-center gap-3 shrink-0 shadow-2xs">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="p-2 bg-indigo-50/80 border border-indigo-100/60 text-indigo-600 rounded-xl hidden sm:flex items-center justify-center shrink-0 shadow-3xs">
-              <HeaderIcon className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                <h1 className="font-display font-bold text-sm md:text-base text-slate-900 tracking-tight leading-tight truncate">
-                  {headerInfo.title}
-                </h1>
-                {headerInfo.tag && (
-                  /* Usually just repeats the title beside it, so it only earns
-                     its place once the row is wide enough to spare. */
-                  <span className="hidden lg:inline-flex items-center text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-md shrink-0">
-                    {headerInfo.tag}
-                  </span>
-                )}
+        {/* Dynamic Topbar — desktop only */}
+        <header className="bg-white border-b border-slate-200/80 px-6 h-16 hidden md:flex justify-between items-center gap-4 shrink-0 shadow-2xs sticky top-0 z-10">
+          {/* Left: View Title & Context */}
+          <div className="flex items-center gap-3 min-w-0">
+            {isCollapsed && (
+              <button
+                onClick={() => setSidebarCollapsed(false)}
+                className="p-1.5 hover:bg-slate-100 border border-slate-200/80 rounded-lg text-slate-500 hover:text-slate-800 transition-colors cursor-pointer shrink-0 shadow-3xs"
+                title="Expand sidebar"
+              >
+                <PanelLeftOpen className="w-4 h-4" />
+              </button>
+            )}
+
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="p-2 bg-indigo-50 border border-indigo-100/80 text-indigo-600 rounded-xl flex items-center justify-center shrink-0 shadow-3xs">
+                <HeaderIcon className="w-4 h-4" />
               </div>
-              <p className="text-slate-400 text-[11px] font-medium leading-normal mt-0.5 hidden md:block max-w-xl truncate">
-                {headerInfo.subtitle}
-              </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="font-display font-bold text-base text-slate-900 tracking-tight leading-tight truncate">
+                    {headerInfo.title}
+                  </h1>
+                  {headerInfo.tag && (
+                    <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md shrink-0">
+                      {headerInfo.tag}
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-400 text-[11px] font-medium leading-none mt-1 truncate">
+                  {headerInfo.subtitle}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* On phones these collapse to icon-only squares so the title keeps the row. */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <button
-              onClick={() => setShowExamModal(true)}
-              title={`Track: ${activeExamConfig.shortName}`}
-              className="inline-flex items-center justify-center gap-1.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 text-xs font-semibold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 border border-slate-200 px-2.5 sm:px-3 sm:py-2 rounded-xl transition-all cursor-pointer shadow-3xs"
-            >
-              <Sparkles className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-indigo-500 shrink-0" />
-              <span className="hidden sm:inline">Track: <strong>{activeExamConfig.shortName}</strong></span>
-            </button>
+          {/* Right: Quick Progress Stats and Sync */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Quick Progress Stats Chip */}
+            <div className="hidden lg:flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs shadow-3xs">
+              <div className="flex items-center gap-1.5" title="Total questions completed">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span className="font-mono font-bold text-slate-800">{totalAnswered}</span>
+                <span className="text-slate-400 text-[11px]">solved</span>
+              </div>
+              <div className="h-3 w-px bg-slate-200" />
+              <div className="flex items-center gap-1.5" title="Overall accuracy">
+                <span className="text-slate-400 text-[11px]">Accuracy:</span>
+                <span className={`font-mono font-bold text-xs ${
+                  overallAccuracy >= 70 ? "text-emerald-600" : overallAccuracy >= 40 ? "text-amber-600" : "text-slate-700"
+                }`}>
+                  {overallAccuracy}%
+                </span>
+              </div>
+            </div>
 
+            {/* Synchronize / Refresh button */}
             <button
               onClick={handleRefreshAll}
               disabled={refreshing}
-              title={refreshing ? "Refreshing…" : "Refresh"}
-              className="inline-flex items-center justify-center gap-2 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 text-xs font-semibold text-indigo-600 bg-indigo-50/80 hover:bg-indigo-50 border border-indigo-100 px-2.5 sm:px-4 sm:py-2 rounded-xl disabled:opacity-50 transition-all cursor-pointer shadow-3xs hover:shadow-2xs active:scale-95"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl transition-all cursor-pointer shadow-3xs active:scale-95 disabled:opacity-50"
+              title="Refresh curriculum content and progress"
             >
-              <RefreshCw className={`w-4 h-4 sm:w-3.5 sm:h-3.5 text-indigo-500 shrink-0 ${refreshing ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">{refreshing ? "Refreshing…" : "Refresh"}</span>
+              <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${refreshing ? "animate-spin text-indigo-600" : ""}`} />
+              <span className="hidden xl:inline">{refreshing ? "Syncing…" : "Sync"}</span>
             </button>
           </div>
         </header>
@@ -1041,6 +1239,7 @@ export default function App() {
                       chapterName={activeSession.chapterName}
                       subject={activeSession.subject}
                       startIndex={activeSession.startIndex}
+                      clearPreviousAnswers={activeSession.clearPreviousAnswers}
                       progress={progress}
                       onFinish={handleFinishSession}
                       onSubmitAnswer={handleSubmitAnswer}
@@ -1149,6 +1348,8 @@ export default function App() {
                     subjects={subjects}
                     progress={progress}
                     selectedExam={selectedExam}
+                    onNavigate={navigateToTab}
+                    onOpenExamSelector={() => setShowExamModal(true)}
                   />
                 }
               />

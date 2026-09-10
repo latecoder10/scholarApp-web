@@ -1,8 +1,8 @@
 {
-  "subject": "Claude CCAF: MCP & Tool Design",
-  "chapter": "4.6 MCP Installation Scopes, Precedence & Configuration",
+  "subject": "Claude CCAF: Tool Design & MCP Integration",
+  "chapter": "2.6 MCP Installation Scopes, Precedence & Configuration",
   "exam": "Claude CCAF",
-  "paper": "Domain-4",
+  "paper": "Domain-2",
   "description": "NEW TOPIC. Choosing local vs project vs user scope, the scope precedence chain, environment variable expansion in .mcp.json, approval and trust behaviour, and verifying tool discovery. Grounded in the official Claude Code MCP documentation.",
   "questions": [
     {
@@ -20,7 +20,12 @@
       "explanation": "The scope table is the fact to memorise. Project scope: loads in the current project only, IS shared with the team via version control, stored in .mcp.json in the project root. The docs add: 'Check .mcp.json into version control so everyone on your team gets the same MCP tools and services.' Add it with claude mcp add --scope project.\n\n**Why the others are wrong**\n\n- **B.** User scope is stored in ~/.claude.json and is explicitly 'private to your user account' — it loads in all YOUR projects, but is shared with nobody.\n- **C.** Local scope is the default and is also private to you, loading only in the project where you added it.\n- **D.** Managed MCP exists for enterprise deployment, but it is not the mechanism for a team sharing a server through their own repository.",
       "examTrick": "Shared with team = project scope = .mcp.json = committed. Everything else in the three-scope table is private to you.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "MCP Scope", "Project Scope", ".mcp.json"]
+      "tags": [
+        "NEW TOPIC",
+        "MCP Scope",
+        "Project Scope",
+        ".mcp.json"
+      ]
     },
     {
       "id": 2,
@@ -37,7 +42,12 @@
       "explanation": "'Local scope is the default. A local-scoped server loads only in the project where you added it and stays private to you. Claude Code stores it in ~/.claude.json under that project's path, so the same server won't appear in your other projects.' Use it for personal development servers, experimental configurations, or servers with credentials you don't want in version control.\n\n**Why the others are wrong**\n\n- **B.** Project scope requires --scope project explicitly; the docs say each add command 'writes to local scope unless you add --scope project or --scope user.'\n- **C.** User scope also lives in ~/.claude.json but at the top level, not nested under a project path, and requires --scope user.\n- **D.** This is the trap the docs call out by name: 'MCP local-scoped servers are stored in ~/.claude.json (your home directory), while general local settings use .claude/settings.local.json.' Two different files, similar names.",
       "examTrick": "Default scope = local = ~/.claude.json keyed by project path. NOT .claude/settings.local.json — different file entirely.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Local Scope", "Default Scope", "~/.claude.json"]
+      "tags": [
+        "NEW TOPIC",
+        "Local Scope",
+        "Default Scope",
+        "~/.claude.json"
+      ]
     },
     {
       "id": 3,
@@ -54,7 +64,12 @@
       "explanation": "'User-scoped servers are stored in ~/.claude.json and provide cross-project accessibility, making them available across all projects on your machine while remaining private to your user account. This scope works well for personal utility servers, development tools, or services you frequently use across different projects.'\n\n**Why the others are wrong**\n\n- **B.** Project scope writes .mcp.json into this one repository and is designed to be shared, which is the opposite of both requirements.\n- **C.** Local scope loads only in the project where it was added, failing the 'every project' requirement.\n- **D.** There is no 'global' scope. The three valid values are local, project, and user.",
       "examTrick": "The three scope values are exactly local | project | user. 'global' and 'enterprise' as --scope values are invented distractors.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "User Scope", "CLI Syntax", "Personal Config"]
+      "tags": [
+        "NEW TOPIC",
+        "User Scope",
+        "CLI Syntax",
+        "Personal Config"
+      ]
     },
     {
       "id": 4,
@@ -71,7 +86,12 @@
       "explanation": "The documented chain, highest first, is: 1. Local scope, 2. Project scope, 3. User scope, 4. Plugin-provided servers, 5. claude.ai connectors. The docs add: 'When the same server is defined in more than one place, Claude Code connects to it once, using the definition from the highest-precedence source. The entire server entry from that source is used; fields are not merged across scopes.'\n\n**Why the others are wrong**\n\n- **B.** Note this is the OPPOSITE of settings precedence, where managed/team-level configuration outranks personal. For MCP servers, your local definition wins. Mixing up the two ladders is the classic error.\n- **C.** User scope is third of five, below both local and project.\n- **D.** Explicitly denied by the docs — no field-level merging. The whole entry comes from one source.",
       "examTrick": "MCP precedence: local > project > user > plugin > connector. The three scopes match duplicates by NAME; plugins and connectors match by ENDPOINT.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Scope Precedence", "Duplicate Servers", "No Field Merging"]
+      "tags": [
+        "NEW TOPIC",
+        "Scope Precedence",
+        "Duplicate Servers",
+        "No Field Merging"
+      ]
     },
     {
       "id": 5,
@@ -88,7 +108,12 @@
       "explanation": "The documented syntax is exactly two forms: '${VAR}: expands to the value of environment variable VAR' and '${VAR:-default}: expands to VAR if set, otherwise uses default'. Expansion is supported in five locations: command, args, env, url, and headers.\n\n**Why the others are wrong**\n\n- **B, C, D.** These are shell, Windows cmd, and templating-language syntaxes respectively. None is what .mcp.json parses. The exam supplies plausible-looking alternatives from adjacent ecosystems.\n\nOne more documented behaviour worth knowing: if a referenced variable is not set and has no default, the config still loads — Claude Code reports a missing-variable warning for that server in 'claude mcp list' and uses the unexpanded ${VAR} text as-is. It does not fail the whole file.",
       "examTrick": "Only ${VAR} and ${VAR:-default}. Expandable in command, args, env, url, headers. Missing var = warning + literal text, not a hard failure.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Env Var Expansion", "Secrets", ".mcp.json"]
+      "tags": [
+        "NEW TOPIC",
+        "Env Var Expansion",
+        "Secrets",
+        ".mcp.json"
+      ]
     },
     {
       "id": 6,
@@ -105,7 +130,12 @@
       "explanation": "The docs list the expansion locations exactly: command (the server executable path), args (command-line arguments), env (environment variables passed to the server), url (for HTTP server types), and headers (for HTTP server authentication).\n\n**Why the others are wrong**\n\n- **B.** Too narrow — this misses the two that matter most for remote servers, url and headers, which is where a Bearer token typically goes.\n- **C.** Too narrow in the other direction; it covers only stdio servers.\n- **D.** Expansion is scoped to those five fields, not applied blanket-wise across the document.",
       "examTrick": "Five fields: command, args, env, url, headers. Remember url + headers — that is how remote servers get their auth without committing it.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Expansion Locations", "HTTP Servers", "Authentication"]
+      "tags": [
+        "NEW TOPIC",
+        "Expansion Locations",
+        "HTTP Servers",
+        "Authentication"
+      ]
     },
     {
       "id": 7,
@@ -122,7 +152,12 @@
       "explanation": "The docs draw this distinction sharply: 'claude mcp add confirms a successful add by printing an Added ... line, which means the configuration was WRITTEN. claude mcp list then shows a health status next to each server it lists, such as ✔ Connected, ! Needs authentication, or ✘ Failed to connect.' They also note 'The claude mcp add command saves the configuration without validating credentials, so a placeholder value is accepted here but the server fails to connect later.'\n\n**Why the others are wrong**\n\n- **B.** This is the exact misconception the docs correct: 'Added' means written, not connected.\n- **C.** Presence of the entry says nothing about whether the server starts, authenticates, or exposes tools.\n- **D.** A failed server does not block startup; it simply shows a failure status.",
       "examTrick": "'Added' = config written. /mcp or 'claude mcp list' = actually connected. The exam tests that gap.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Tool Discovery", "Verification", "/mcp"]
+      "tags": [
+        "NEW TOPIC",
+        "Tool Discovery",
+        "Verification",
+        "/mcp"
+      ]
     },
     {
       "id": 8,
@@ -139,7 +174,12 @@
       "explanation": "'For security reasons, Claude Code prompts for approval in interactive sessions before using project-scoped servers from .mcp.json files. To reset those approval choices, run claude mcp reset-project-choices.' The rationale is that .mcp.json arrives from a repository other people can write to.\n\n**Why the others are wrong**\n\n- **B.** Authentication problems show as '! Needs authentication', a different status.\n- **C.** Re-adding at local scope would sidestep the prompt but is not the intended fix, and it would break the team-sharing goal.\n- **D.** A malformed file would not produce a per-server pending-approval status.\n\nImportant related fact: 'claude -p runs, Agent SDK sessions, and cloud sessions can't show that prompt: Claude Code loads project-scoped servers there without asking.' To keep a server out anyway, add it to disabledMcpjsonServers, which blocks it in every mode.",
       "examTrick": "Only PROJECT-scoped (.mcp.json) servers need approval, because they come from the repo. Headless/-p sessions load them without asking.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Project Approval", "Security", "disabledMcpjsonServers"]
+      "tags": [
+        "NEW TOPIC",
+        "Project Approval",
+        "Security",
+        "disabledMcpjsonServers"
+      ]
     },
     {
       "id": 9,
@@ -156,7 +196,12 @@
       "explanation": "The docs give the trigger verbatim: 'Connect a server when you find yourself copying data into chat from another tool, like an issue tracker or a monitoring dashboard.' For a standard integration with well-maintained community servers, use the existing server rather than building. An MCP server exposes tickets and comments as discoverable tools with structured descriptions, handled auth, and standardised error reporting.\n\n**Why the others are wrong**\n\n- **B.** Bash plus curl bypasses the tool interface entirely: hand-rolled auth headers, inline JSON parsing every time, no tool description and no standardised error handling.\n- **C.** An export goes stale the moment a ticket is updated, and the team wants live data rather than a snapshot.\n- **D.** Building custom is the right call only for a workflow with no community equivalent. Ordinary ticket data does not justify the maintenance burden.",
       "examTrick": "'Copying data from another tool into chat' is the canonical MCP trigger. Community server first; custom build only where no equivalent exists.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "MCP Trigger", "Build vs Use", "Tool Discovery"]
+      "tags": [
+        "NEW TOPIC",
+        "MCP Trigger",
+        "Build vs Use",
+        "Tool Discovery"
+      ]
     },
     {
       "id": 10,
@@ -173,7 +218,12 @@
       "explanation": "The docs flag this as 'Important: Separate server arguments with --'. For stdio servers, the double dash separates Claude's own options from the command and arguments that run the server. Everything after -- is passed to the server untouched. Example: claude mcp add --transport stdio myserver -- npx server runs 'npx server'.\n\n**Why the others are wrong**\n\n- **B.** stdio servers have no URL; the transport is chosen with --transport.\n- **C.** It is an argument-boundary marker, not a shell-escaping device.\n- **D.** Without it, flags meant for the server would be consumed by Claude's own argument parser — it is functionally required, not decorative.",
       "examTrick": "-- is the boundary between Claude's flags and the server's own command line. Required for stdio adds with server-side flags.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "CLI Syntax", "stdio Transport", "Argument Separator"]
+      "tags": [
+        "NEW TOPIC",
+        "CLI Syntax",
+        "stdio Transport",
+        "Argument Separator"
+      ]
     },
     {
       "id": 11,
@@ -190,7 +240,12 @@
       "explanation": "'For an https:// endpoint, add it with --transport http, or with --transport sse when the instructions say the endpoint uses SSE.' Both are https URLs; the distinction is what the server speaks.\n\n**Why the others are wrong**\n\n- **B.** Correct for a plain HTTP MCP endpoint, but the question specifies SSE.\n- **C.** The docs state --transport doesn't accept 'ws'; a wss:// endpoint uses the separate 'add a remote WebSocket server' option.\n- **D.** stdio is for locally-executed server processes, not remote URLs.",
       "examTrick": "https + plain = http; https + SSE = sse; wss = the separate WebSocket option, NOT --transport ws; local process = stdio.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Transports", "Remote Servers", "SSE"]
+      "tags": [
+        "NEW TOPIC",
+        "Transports",
+        "Remote Servers",
+        "SSE"
+      ]
     },
     {
       "id": 12,
@@ -207,7 +262,12 @@
       "explanation": "MCP tools use the mcp__<server>__<tool> form, and the docs say to 'Use this full name when referencing the tool in permission rules, a skill's allowed-tools list, a subagent's tools field, or a hook matcher.' They add a specific gotcha: 'A hook matcher written against the bare server key, such as mcp__database-tools__.*, never fires for a plugin-bundled server' — a plugin's server registers under plugin:<plugin-name>:<server-name>.\n\n**Why the others are wrong**\n\n- **B.** Bare names are ambiguous across servers and are not what the permission and hook matchers see.\n- **C.** The server name alone is not a tool reference; you would need a glob such as mcp__database-tools__* (valid for allow, since the server segment is literal).\n- **D.** Transport is not part of any tool name.",
       "examTrick": "mcp__<server>__<tool> everywhere. Plugin-bundled servers register as plugin:<plugin>:<server>, so bare-server matchers silently never fire.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Tool Naming", "Hook Matchers", "Plugin Servers"]
+      "tags": [
+        "NEW TOPIC",
+        "Tool Naming",
+        "Hook Matchers",
+        "Plugin Servers"
+      ]
     },
     {
       "id": 13,
@@ -224,7 +284,12 @@
       "explanation": "The docs state: 'This variable is set in the server's environment, not in Claude Code's own environment, so referencing it via ${VAR} expansion in the command or args of a project-scoped .mcp.json entry or a local- or user-scoped server entry in ~/.claude.json requires a default such as ${CLAUDE_PROJECT_DIR:-.}. Plugin-provided MCP configurations substitute ${CLAUDE_PROJECT_DIR} directly and don't need the default.'\n\n**Why the others are wrong**\n\n- **B.** No rename is involved.\n- **C.** A bare ${VAR} is perfectly valid syntax; without a default and without the variable set, you get a warning and the literal text.\n- **D.** Redaction applies to credential-named variables passed to a headersHelper, an unrelated mechanism.",
       "examTrick": "${CLAUDE_PROJECT_DIR} needs :-. in .mcp.json and ~/.claude.json entries. Plugin-provided configs substitute it directly.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "CLAUDE_PROJECT_DIR", "Defaults", "Expansion Gotcha"]
+      "tags": [
+        "NEW TOPIC",
+        "CLAUDE_PROJECT_DIR",
+        "Defaults",
+        "Expansion Gotcha"
+      ]
     },
     {
       "id": 14,
@@ -241,7 +306,12 @@
       "explanation": "The context-cost table lists MCP servers as loading at session start with 'Tool names; full schemas on demand', giving a cost of 'Low until a tool is used'. Tool search is on by default, so idle MCP tools consume minimal context. Run /context all to see how many tokens each loaded MCP tool uses.\n\n**Why the others are wrong**\n\n- **B.** This was the concern that tool search and deferred schemas were built to solve; it is not current behaviour.\n- **C.** 'Minimal' is not 'zero' — names and server instructions do load. Hooks are the feature with genuinely zero context cost unless they return output.\n- **D.** Subagents get their own context, but that has nothing to do with where MCP schemas load.",
       "examTrick": "MCP at startup = names only, schemas deferred. Zero-context feature = hooks. Full content at startup = CLAUDE.md.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Context Cost", "Tool Search", "Deferred Schemas"]
+      "tags": [
+        "NEW TOPIC",
+        "Context Cost",
+        "Tool Search",
+        "Deferred Schemas"
+      ]
     },
     {
       "id": 15,
@@ -258,7 +328,12 @@
       "explanation": "'Claude Code executes a headersHelper as an arbitrary shell command. For a server in a project .mcp.json or at local scope, it runs the helper only after you accept the trust dialog for the folder you started the session in.' Until you trust the folder, Claude Code connects the server with its static headers alone. Notably, a parent folder's trust does not count.\n\n**Why the others are wrong**\n\n- **B.** That would execute repository-supplied shell code before you had approved the repository — precisely the risk the trust gate exists to prevent.\n- **C.** Headless runs are not exempt from the trust rule; they print a 'headersHelper not run' line per server to stderr telling you how to grant the trust.\n- **D.** 'Claude Code runs the helper fresh on each connection, at session start and on reconnect... It doesn't cache the result.'",
       "examTrick": "headersHelper = arbitrary shell code from the repo, so it is trust-gated and re-run on every connection, never cached.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "headersHelper", "Workspace Trust", "Dynamic Auth"]
+      "tags": [
+        "NEW TOPIC",
+        "headersHelper",
+        "Workspace Trust",
+        "Dynamic Auth"
+      ]
     },
     {
       "id": 16,
@@ -275,7 +350,12 @@
       "explanation": "'Set oauth.scopes to pin the scopes Claude Code requests during the authorization flow. This is the supported way to restrict an MCP server to a security-team-approved subset... The value is a single space-separated string, matching the scope parameter format in RFC 6749 §3.3.' It takes precedence over both authServerMetadataUrl and the scopes discovered at /.well-known.\n\n**Why the others are wrong**\n\n- **B.** The value is a space-separated string, not an array — a format detail the exam likes.\n- **C.** Deny rules control which tools Claude may call, not which OAuth scopes are requested at authorization time. The token would still be over-privileged.\n- **D.** Backwards: oauth.scopes takes precedence over authServerMetadataUrl, and metadata discovery is a fallback, not the control.\n\nAlso worth knowing: if the authorization server advertises offline_access, Claude Code appends it to the pinned scopes so the token can refresh. And a 403 insufficient_scope triggers re-authentication with the same pinned scopes.",
       "examTrick": "oauth.scopes = ONE space-separated string, wins over metadata discovery. Not an array, not a deny rule.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "OAuth Scopes", "Security Review", "Authentication"]
+      "tags": [
+        "NEW TOPIC",
+        "OAuth Scopes",
+        "Security Review",
+        "Authentication"
+      ]
     },
     {
       "id": 17,
@@ -292,7 +372,12 @@
       "explanation": "The docs cover add-json for exactly this input shape, with three tips: make sure the JSON is properly escaped in your shell, the JSON must conform to the MCP server configuration schema, and 'You can use --scope user to add the server to your user configuration instead of the project-specific one.'\n\n**Why the others are wrong**\n\n- **B.** MCP servers are not configured in settings.json; user- and local-scope servers live in ~/.claude.json, and project servers in .mcp.json.\n- **C.** .mcp.json is the project-scope store, not a universal paste target, and using it would share the server with the team.\n- **D.** 'claude mcp import' in the docs refers specifically to importing from Claude Desktop on macOS and WSL, not to arbitrary client formats.",
       "examTrick": "A pasted mcpServers JSON block = claude mcp add-json, and it defaults to local scope unless you pass --scope.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "add-json", "User Scope", "Configuration Import"]
+      "tags": [
+        "NEW TOPIC",
+        "add-json",
+        "User Scope",
+        "Configuration Import"
+      ]
     },
     {
       "id": 18,
@@ -309,7 +394,12 @@
       "explanation": "The scopes section states: 'MCP servers can be configured at three scopes... Administrators can also deploy servers at the enterprise level via managed configuration.' Managed MCP is the enterprise tier and is what you use when the configuration must not be overridable.\n\n**Why the others are wrong**\n\n- **B.** A committed .mcp.json is overridden by any developer's local-scope server of the same name, since local sits above project in the precedence chain.\n- **C.** User scope is third of five in the chain, below both local and project, so it is the easiest to override.\n- **D.** Local scope does have the highest precedence of the three, but it is per-developer and per-project, which makes it the wrong tool for an organization-wide guarantee — and it is the developer's own file to edit.",
       "examTrick": "The three named scopes are all user-editable. 'Cannot be overridden / organization-wide' = managed MCP, the enterprise tier.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Managed MCP", "Enterprise Scope", "Override Protection"]
+      "tags": [
+        "NEW TOPIC",
+        "Managed MCP",
+        "Enterprise Scope",
+        "Override Protection"
+      ]
     }
   ]
 }

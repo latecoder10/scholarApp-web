@@ -1,8 +1,8 @@
 {
-  "subject": "Claude CCAF: Prompt Engineering & Extraction",
-  "chapter": "2.9 Prompt Caching, TTLs & Cost Control",
+  "subject": "Claude CCAF: Prompt Engineering & Structured Output",
+  "chapter": "4.9 Prompt Caching, TTLs & Cost Control",
   "exam": "Claude CCAF",
-  "paper": "Domain-2",
+  "paper": "Domain-4",
   "description": "NEW TOPIC. cache_control breakpoints, the 5-minute and 1-hour TTLs, minimum cacheable tokens, the prefix hierarchy and what invalidates each level, cache write and read pricing, the 20-block lookback, and the usage response fields. Grounded in the official Claude API prompt-caching documentation.",
   "questions": [
     {
@@ -20,7 +20,12 @@
       "explanation": "Ephemeral is the only supported cache type. The 5-minute TTL is the default with no additional cost beyond base pricing; the 1-hour TTL costs 2× the base input token price and is set with cache_control: {\"type\": \"ephemeral\", \"ttl\": \"1h\"}.\n\n**Why the others are wrong**\n\n- **B, C.** Neither pair of numbers is documented.\n- **D.** The ttl field makes it configurable.\n\nThe decision rule the docs give: 'Use 1-hour cache for gaps beyond 5 minutes between requests.' If your traffic is continuous, the default is cheaper; if it is bursty with long gaps, the longer TTL pays for itself by avoiding repeated cache writes.",
       "examTrick": "5 min default (no extra write cost beyond 1.25×), 1 hour via ttl:\"1h\" (2× write). Choose by the GAP between requests.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Cache TTL", "ephemeral", "ttl 1h"]
+      "tags": [
+        "NEW TOPIC",
+        "Cache TTL",
+        "ephemeral",
+        "ttl 1h"
+      ]
     },
     {
       "id": 2,
@@ -37,7 +42,12 @@
       "explanation": "The multipliers are: 5-minute cache write 1.25× base, 1-hour cache write 2× base, and cache reads (hit or refresh) 0.1× base. For Claude Opus 5 at $5/MTok base, that is $6.25/MTok for a 5-minute write, $10/MTok for a 1-hour write, and $0.50/MTok for a read.\n\n**Why the others are wrong**\n\n- **B, C, D.** Each gets at least one multiplier wrong.\n\nThe economics follow directly: a cached prefix pays a 25% premium once and then costs a tenth of the base rate on every subsequent hit. Break-even for a 5-minute write is well under two reuses, which is why caching a stable system prompt and tool set is almost always worth it in an agentic loop.",
       "examTrick": "1.25× / 2× write, 0.1× read. Reads are a TENTH of base — that is the whole value proposition.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Cache Pricing", "Multipliers", "Break-Even"]
+      "tags": [
+        "NEW TOPIC",
+        "Cache Pricing",
+        "Multipliers",
+        "Break-Even"
+      ]
     },
     {
       "id": 3,
@@ -54,7 +64,12 @@
       "explanation": "'Maximum: 4 cache breakpoints per request. Automatic caching uses one slot if enabled.' So combining automatic caching with explicit breakpoints leaves you three.\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the documented limit.\n\nWhy four is usually enough: the prefix hierarchy has three natural levels — tools, system, messages — so four breakpoints let you cache each level plus one extra split within a level that changes at a different frequency.",
       "examTrick": "4 breakpoints max, and automatic caching consumes one. Explicit multi-section caching gets 3 if automatic is on.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Cache Breakpoints", "Limit of 4", "Automatic Caching"]
+      "tags": [
+        "NEW TOPIC",
+        "Cache Breakpoints",
+        "Limit of 4",
+        "Automatic Caching"
+      ]
     },
     {
       "id": 4,
@@ -71,7 +86,12 @@
       "explanation": "'Prefix hierarchy order: 1. Tools (first in order), 2. System messages, 3. Messages (last in order). Changes at any level invalidate that level and all subsequent levels.' This is why the docs advise placing cached content at the prompt beginning and putting the most stable content first.\n\n**Why the others are wrong**\n\n- **B, C.** Both misorder the hierarchy, which predicts the wrong invalidation behaviour.\n- **D.** Caching is prefix-based, so the levels are strictly ordered and dependent.\n\nThe practical consequence: adding a single tool definition invalidates the tool cache AND the system cache AND the message cache — the most expensive kind of change you can make. Stabilise your tool set before optimising anything else.",
       "examTrick": "Tools → system → messages. A change cascades DOWNWARD to everything after it. Tool changes are the most expensive.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Prefix Hierarchy", "Cascading Invalidation", "Tool Stability"]
+      "tags": [
+        "NEW TOPIC",
+        "Prefix Hierarchy",
+        "Cascading Invalidation",
+        "Tool Stability"
+      ]
     },
     {
       "id": 5,
@@ -88,7 +108,12 @@
       "explanation": "The documented invalidation table: tool definitions → invalidates tools, system, and messages caches. Web search/citations toggle → invalidates system and messages. Speed setting (fast vs standard) → invalidates system and messages. Tool choice → invalidates messages only. Images (add/remove anywhere) → invalidates messages only. Thinking parameters and effort setting → invalidate messages (model-specific for tool/system).\n\n**Why the others are wrong**\n\n- **B.** Tool definitions invalidate all three levels — the broadest blast radius.\n- **C, D.** Both invalidate system and messages.\n\nThe reason tool_choice is cheap while tool DEFINITIONS are expensive: tool_choice changes only the instruction about how to use the tools, which lives after the tool block in the prefix.",
       "examTrick": "Blast radius: tool definitions = all 3. web search/citations & speed = system+messages. tool_choice & images = messages only.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Cache Invalidation", "Blast Radius", "tool_choice"]
+      "tags": [
+        "NEW TOPIC",
+        "Cache Invalidation",
+        "Blast Radius",
+        "tool_choice"
+      ]
     },
     {
       "id": 6,
@@ -105,7 +130,12 @@
       "explanation": "The per-model minimums: Claude Opus 5, Fable 5, and Mythos 5 at 512 tokens; Mythos Preview and Opus 4.7 at 2,048; Opus 4.8, Sonnet 5, Sonnet 4.6, and Sonnet 4.5 at 1,024; Opus 4.6, Opus 4.5, and Haiku 4.5 at 4,096; Haiku 3.5 at 2,048. 'Shorter prompts process without caching; check response usage fields to verify.'\n\n**Why the others are wrong**\n\n- **B.** No error — the request succeeds, it just is not cached. That silence is the danger: you can believe you are caching and be paying full price.\n- **C.** No padding occurs.\n- **D.** Every model has a minimum.\n\nYou do not need the whole table, but note the spread: 512 on the newest Opus versus 4,096 on Haiku 4.5. A prefix that caches on one model may silently not cache on another.",
       "examTrick": "Below the minimum, caching silently does not happen. Verify with the usage fields — never assume.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Minimum Tokens", "Silent Non-Caching", "Model Differences"]
+      "tags": [
+        "NEW TOPIC",
+        "Minimum Tokens",
+        "Silent Non-Caching",
+        "Model Differences"
+      ]
     },
     {
       "id": 7,
@@ -122,7 +152,12 @@
       "explanation": "'cache_creation_input_tokens: Tokens written to cache creating a new entry. cache_read_input_tokens: Tokens retrieved from cache for this request. input_tokens: Tokens after the last cache breakpoint (not eligible for cache).' And: 'The input_tokens field represents ONLY tokens after your last breakpoint, not all input tokens sent.'\n\n**Why the others are wrong**\n\n- **B, C.** Not documented field names.\n- **D.** This is the specific misreading the docs warn about — input_tokens looking suspiciously small is a sign caching is working, not a sign of a bug.\n\nUse these fields to verify caching rather than trusting your configuration: a cache_creation value on every request means your breakpoint is on content that keeps changing.",
       "examTrick": "input_tokens = ONLY what's after the last breakpoint. Total = creation + read + input_tokens.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "usage Fields", "Verification", "Token Accounting"]
+      "tags": [
+        "NEW TOPIC",
+        "usage Fields",
+        "Verification",
+        "Token Accounting"
+      ]
     },
     {
       "id": 8,
@@ -139,7 +174,12 @@
       "explanation": "'Place cache_control on the last block that stays identical across requests, not on blocks that change (timestamps, per-request context, user messages).' Cache hits require '100% identical prompt segments up to and including the breakpoint block', so a breakpoint placed on varying content can never hit.\n\n**Why the others are wrong**\n\n- **B.** The final block usually IS the varying part in a conversation, so the prefix never matches.\n- **C.** Too early leaves stable content uncached, wasting the opportunity.\n- **D.** Continuous refresh means paying the write premium forever with no reads.\n\nA related trap: a timestamp injected into a system prompt for 'freshness' quietly destroys caching for everything after it.",
       "examTrick": "Breakpoint on the LAST IDENTICAL block. Any variable content before the breakpoint kills every hit.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Breakpoint Placement", "Exact Prefix Matching", "Timestamps"]
+      "tags": [
+        "NEW TOPIC",
+        "Breakpoint Placement",
+        "Exact Prefix Matching",
+        "Timestamps"
+      ]
     },
     {
       "id": 9,
@@ -156,7 +196,12 @@
       "explanation": "'When checking for cache hits, the system walks backward up to 20 blocks from your breakpoint to find previously written entries. If nothing is found within 20 blocks, no cache hit occurs (regardless of older entries). Critical caveat: Cache reads only find entries that PREVIOUS REQUESTS ALREADY WROTE at their breakpoints. The lookback does not find and cache stable content behind your breakpoint.'\n\n**Why the others are wrong**\n\n- **B.** Lookback is a LOOKUP mechanism, not a write mechanism.\n- **C.** It is not a size cap on the cached prefix.\n- **D.** Not a retry policy.\n\nThe operational rule that follows: 'For growing conversations with fewer than 20 new blocks per turn, one breakpoint suffices.' If a turn adds more than 20 blocks — a burst of parallel tool results, say — you can fall outside the window and lose the hit.",
       "examTrick": "20-block lookback finds ALREADY-WRITTEN entries. It never creates them. >20 new blocks in a turn can lose the hit.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "20-Block Lookback", "Cache Lookup", "Growing Conversations"]
+      "tags": [
+        "NEW TOPIC",
+        "20-Block Lookback",
+        "Cache Lookup",
+        "Growing Conversations"
+      ]
     },
     {
       "id": 10,
@@ -173,7 +218,12 @@
       "explanation": "The cannot-be-cached list is: empty text blocks, thinking blocks marked directly with cache_control, and citations sub-content (though the source documents can be cached). Everything else in the list can be cached: tools, system messages, text messages, images and documents, tool use and tool results, and thinking blocks 'cached with other content in previous assistant turns'.\n\n**Why the others are wrong**\n\n- **B, C, D.** All three are explicitly cacheable.\n\nThe thinking-block nuance is the subtle part: thinking blocks CAN ride along in a cached prefix as part of a previous assistant turn, and they count as input tokens when read — but you may not put a breakpoint directly on one.",
       "examTrick": "Thinking blocks cache ALONGSIDE other content but cannot carry a breakpoint themselves. Empty text blocks never cache.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Cacheable Content", "Thinking Blocks", "Citations"]
+      "tags": [
+        "NEW TOPIC",
+        "Cacheable Content",
+        "Thinking Blocks",
+        "Citations"
+      ]
     },
     {
       "id": 11,
@@ -190,7 +240,12 @@
       "explanation": "'Automatic caching: Add cache_control at request top level; system automatically places breakpoint on the last cacheable block and moves it forward as conversations grow. Best for multi-turn conversations.' Explicit breakpoints, by contrast, give 'fine-grained control over what gets cached. Use when different sections change at different frequencies or when you need 4 breakpoints for multi-section caching.'\n\n**Why the others are wrong**\n\n- **B.** It requires the top-level cache_control field.\n- **C.** Prompt caching caches the input prefix, not the output.\n- **D.** It is a documented placement rule, not a frequency heuristic.\n\nThe docs' advice: 'Start with automatic caching for conversations' — the moving breakpoint is exactly what a growing message array needs.",
       "examTrick": "Automatic = top-level cache_control, breakpoint moves forward. Explicit = per-block, for sections changing at different rates.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Automatic Caching", "Explicit Breakpoints", "Multi-Turn"]
+      "tags": [
+        "NEW TOPIC",
+        "Automatic Caching",
+        "Explicit Breakpoints",
+        "Multi-Turn"
+      ]
     },
     {
       "id": 12,
@@ -207,7 +262,12 @@
       "explanation": "The docs advise caching 'stable, reusable content (system instructions, context, tool definitions)' and placing cached content at the prompt beginning. In an agentic loop the tools and system prompt are identical on every iteration and sit first in the prefix hierarchy, which makes them the ideal cache target. Reads cost 0.1× base.\n\n**Why the others are wrong**\n\n- **B.** Dropping early turns loses information and may not even help, since the expensive constant part is the prefix, not the tail.\n- **C.** Batch is for work with no latency requirement. An agentic loop is inherently blocking — each turn depends on the previous result.\n- **D.** Output length is usually a small fraction of the cost when a long prefix is resent every turn.\n\nThis is also why tool-set stability matters: changing tool definitions invalidates all three cache levels.",
       "examTrick": "Agentic loop cost = the resent prefix. Cache tools + system first. Batch is not an option for a blocking loop.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Agentic Loop Cost", "Stable Prefix", "Cost Control"]
+      "tags": [
+        "NEW TOPIC",
+        "Agentic Loop Cost",
+        "Stable Prefix",
+        "Cost Control"
+      ]
     },
     {
       "id": 13,
@@ -224,7 +284,12 @@
       "explanation": "'Each batched request must have max_tokens of at least 1. max_tokens: 0 (cache pre-warming) is not supported inside a batch, because an ephemeral cache entry written during batch processing would likely expire before the follow-up request runs.' Batches complete within an hour typically and up to 24 hours; a 5-minute TTL cannot survive that gap reliably.\n\n**Why the others are wrong**\n\n- **B.** The restriction is specifically on max_tokens: 0, not on caching in batches generally.\n- **C.** max_tokens: 0 is a valid pre-warming technique in synchronous requests.\n- **D.** Streaming is unrelated.\n\nThis is a nice cross-topic question because it only makes sense once you hold both facts: the batch processing window and the ephemeral cache lifetime.",
       "examTrick": "Batch timing (up to 24h) versus cache TTL (5 min / 1 h) do not line up. That mismatch is the reason.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Cache Pre-Warming", "Batch Interaction", "TTL Mismatch"]
+      "tags": [
+        "NEW TOPIC",
+        "Cache Pre-Warming",
+        "Batch Interaction",
+        "TTL Mismatch"
+      ]
     },
     {
       "id": 14,
@@ -241,7 +306,12 @@
       "explanation": "Cache hits require 100% identical segments up to and including the breakpoint block. Writes on every request with no reads is the exact signature of a breakpoint placed after varying content — a timestamp, a per-request context injection, or the latest user message. You are paying the 1.25× write premium every time and never collecting the 0.1× read.\n\n**Why the others are wrong**\n\n- **B.** Possible in principle, but a disabled cache would not produce creation tokens either.\n- **C.** The 5-minute default does not expire instantly, and back-to-back requests fall well inside it.\n- **D.** The usage fields are reported regardless of streaming.\n\nThis is the diagnostic skill worth carrying: read the usage fields as a signal about your breakpoint placement.",
       "examTrick": "All writes, no reads = your breakpoint is on varying content. It is the single most common caching bug.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Cache Diagnostics", "Breakpoint Bug", "usage Fields"]
+      "tags": [
+        "NEW TOPIC",
+        "Cache Diagnostics",
+        "Breakpoint Bug",
+        "usage Fields"
+      ]
     },
     {
       "id": 15,
@@ -258,7 +328,12 @@
       "explanation": "'Use 1-hour cache for gaps beyond 5 minutes between requests.' With a 20-minute gap, a default-TTL entry is gone by the next burst, so you would pay a 1.25× write every burst and never read. The 1-hour TTL costs 2× to write but survives the gap, so the second burst reads at 0.1×.\n\n**Why the others are wrong**\n\n- **B.** Cheaper per write, but you would write every time and read never — strictly worse.\n- **C.** Caching helps precisely because the TTL is selectable.\n- **D.** Alternating produces inconsistent prefixes and no coherent strategy.\n\nThe general rule: compare your inter-request GAP against the TTL, not your request volume.",
       "examTrick": "Choose the TTL by the GAP between requests, not by volume. Gap > 5 min → 1h TTL.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "TTL Selection", "Bursty Traffic", "Gap Analysis"]
+      "tags": [
+        "NEW TOPIC",
+        "TTL Selection",
+        "Bursty Traffic",
+        "Gap Analysis"
+      ]
     },
     {
       "id": 16,
@@ -275,7 +350,12 @@
       "explanation": "The cacheable list includes 'Thinking blocks (cached with other content in previous assistant turns; count as input tokens when read)', while the cannot-cache list includes 'Thinking blocks marked directly with cache_control.'\n\n**Why the others are wrong**\n\n- **B.** They are cacheable as part of a prefix.\n- **C.** They count as input tokens when read, at the cache-read rate.\n- **D.** Marking one directly is exactly what is disallowed.\n\nRelated: 'Thinking parameters' invalidate the messages cache, and are model-specific for the tool and system levels — so toggling extended thinking mid-conversation has a cache cost.",
       "examTrick": "Thinking blocks: cacheable as passengers, never as breakpoints. Changing thinking params invalidates the messages cache.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Thinking Blocks", "Breakpoint Restrictions", "Invalidation"]
+      "tags": [
+        "NEW TOPIC",
+        "Thinking Blocks",
+        "Breakpoint Restrictions",
+        "Invalidation"
+      ]
     },
     {
       "id": 17,
@@ -292,7 +372,12 @@
       "explanation": "The Messages API is stateless: it maintains no conversation history between requests, so each call must include the complete context. That guarantees the same tools, system prompt, and earlier turns are transmitted and processed repeatedly — exactly the redundancy prompt caching removes.\n\n**Why the others are wrong**\n\n- **B.** There is no server-side conversation state; that is what stateless means.\n- **C.** Caching applies to INPUT tokens only.\n- **D.** You still send the full messages array. Caching changes how the prefix is PRICED and processed, not what you transmit.\n\nHolding these two facts together — statelessness and caching — explains the cost curve of any multi-turn agent.",
       "examTrick": "Stateless → full history every request → growing input tokens → caching is the mitigation. You still SEND everything.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Stateless API", "Cost Curve", "Multi-Turn Agents"]
+      "tags": [
+        "NEW TOPIC",
+        "Stateless API",
+        "Cost Curve",
+        "Multi-Turn Agents"
+      ]
     },
     {
       "id": 18,
@@ -309,7 +394,12 @@
       "explanation": "'Explicit breakpoints: Place cache_control directly on individual content blocks for fine-grained control over what gets cached. Use when different sections change at different frequencies or when you need 4 breakpoints for multi-section caching.'\n\n**Why the others are wrong**\n\n- **B.** Automatic caching places one moving breakpoint on the last cacheable block; it cannot preserve an earlier section when a later one changes.\n- **C.** A single trailing breakpoint means any change to the most volatile section invalidates the entire prefix — the exact problem multi-section caching solves.\n- **D.** Splitting requests does not produce a single coherent prompt.\n\nThe design instinct to develop: order sections from least to most volatile, and put a breakpoint at each boundary.",
       "examTrick": "Different change frequencies = explicit multi-section breakpoints, ordered least-volatile first. Up to 4.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Multi-Section Caching", "Volatility Ordering", "Explicit Breakpoints"]
+      "tags": [
+        "NEW TOPIC",
+        "Multi-Section Caching",
+        "Volatility Ordering",
+        "Explicit Breakpoints"
+      ]
     },
     {
       "id": 19,
@@ -326,7 +416,12 @@
       "explanation": "The pricing line reads 'Cache reads (hit/refresh): 0.1× base price' — the two cases are grouped at the same rate.\n\n**Why the others are wrong**\n\n- **B.** A refresh is priced as a read, not a write.\n- **C.** Reads are charged, just at a tenth of base.\n- **D.** Refresh behaviour is documented as a read case.\n\nThe consequence for a long-running session: continuing to hit a cached prefix keeps it alive at read pricing, so a steadily-used prefix does not repeatedly incur write premiums. Cost spikes come from INVALIDATION — changing tools, system content, or a setting that cascades — not from continued use.",
       "examTrick": "Hits and refreshes both cost 0.1×. Cost spikes come from invalidation, not from reuse.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Cache Refresh", "Read Pricing", "Long Sessions"]
+      "tags": [
+        "NEW TOPIC",
+        "Cache Refresh",
+        "Read Pricing",
+        "Long Sessions"
+      ]
     },
     {
       "id": 20,
@@ -343,7 +438,12 @@
       "explanation": "The best-practices list: start with automatic caching for conversations; place cached content at the prompt beginning; cache stable, reusable content; place the breakpoint on the last identical block; 'For growing conversations with <20 new blocks per turn, one breakpoint suffices'; use the 1-hour cache for gaps beyond 5 minutes; and verify minimum token thresholds are met.\n\n**Why the others are wrong**\n\n- **B.** Premature complexity; automatic caching is the documented starting point and explicit breakpoints are for sections with differing change rates.\n- **C.** Caching the varying block guarantees zero hits — the inverse of the placement rule.\n- **D.** Caching pays off from the second request onward, not after 50 turns.",
       "examTrick": "Default recipe: automatic caching + stable content first + verify the minimum + one breakpoint under 20 new blocks per turn.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Best Practices", "Starting Configuration", "Verification"]
+      "tags": [
+        "NEW TOPIC",
+        "Best Practices",
+        "Starting Configuration",
+        "Verification"
+      ]
     }
   ]
 }

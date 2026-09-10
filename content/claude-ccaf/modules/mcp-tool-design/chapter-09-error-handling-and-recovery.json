@@ -1,8 +1,8 @@
 {
-  "subject": "Claude CCAF: MCP & Tool Design",
-  "chapter": "4.9 Structured Error Handling, Recovery & Resilience",
+  "subject": "Claude CCAF: Tool Design & MCP Integration",
+  "chapter": "2.9 Structured Error Handling, Recovery & Resilience",
   "exam": "Claude CCAF",
-  "paper": "Domain-4",
+  "paper": "Domain-2",
   "description": "NEW TOPIC. Surfacing type-specific errors with recoverability and suggested next actions, tool_result error signalling, connection status and automatic reconnection, authentication recovery, config-validation versus runtime failures, and designing agents that recover rather than stall. Grounded in the official Claude API and Claude Code documentation.",
   "questions": [
     {

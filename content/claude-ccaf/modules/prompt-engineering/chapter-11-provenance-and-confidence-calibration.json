@@ -1,8 +1,8 @@
 {
-  "subject": "Claude CCAF: Prompt Engineering & Extraction",
-  "chapter": "2.11 Provenance, Uncertainty & Confidence Calibration",
+  "subject": "Claude CCAF: Prompt Engineering & Structured Output",
+  "chapter": "4.11 Provenance, Uncertainty & Confidence Calibration",
   "exam": "Claude CCAF",
-  "paper": "Domain-2",
+  "paper": "Domain-4",
   "description": "NEW TOPIC. Recording where each assertion came from, representing uncertainty honestly, calibrating confidence so it drives routing, and distinguishing unverifiable from refuted. Grounded in official Claude documentation on structured outputs, hallucination reduction, long-context prompting, and cross-checked workflows.",
   "questions": [
     {
@@ -20,7 +20,12 @@
       "explanation": "'Structure document content and metadata with XML tags: When using multiple documents, wrap each document in <document> tags with <document_content> and <source> (and other metadata) subtags for clarity.'\n\n**Why the others are wrong**\n\n- **B, D.** Neither gives a machine-readable boundary or a distinct source field.\n- **C.** A flat array loses per-document metadata.\n\nThe <source> subtag is the provenance primitive: without a named source, a quote can be verbatim and still unciteable, because nothing records WHICH document it came from. Everything else in this topic builds on having that field.",
       "examTrick": "<source> is the provenance primitive. A verbatim quote with no source is still unciteable.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Document Structure", "source Subtag", "Citation Foundation"]
+      "tags": [
+        "NEW TOPIC",
+        "Document Structure",
+        "source Subtag",
+        "Citation Foundation"
+      ]
     },
     {
       "id": 2,
@@ -37,7 +42,12 @@
       "explanation": "'For tasks involving long documents (>20k tokens), ask Claude to extract word-for-word quotes first before performing its task. This grounds its responses in the actual text.' The follow-up step is 'Use the quotes to analyze... referencing the quotes by number. Only base your analysis on the extracted quotes.'\n\n**Why the others are wrong**\n\n- **B.** Quotes add tokens; the benefit is grounding, not economy.\n- **C.** Reading order is not the mechanism.\n- **D.** It reduces reliance on parametric knowledge but does not disable it — which is why external knowledge restriction is listed as a SEPARATE technique to instruct against using general knowledge.\n\nThe two-step shape is what creates an audit trail: step one produces evidence, step two produces conclusions bound to that evidence.",
       "examTrick": "Quote first, analyse second. Step one is the evidence set; step two binds conclusions to it.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Quote-First", "Evidence Set", "Audit Trail"]
+      "tags": [
+        "NEW TOPIC",
+        "Quote-First",
+        "Evidence Set",
+        "Audit Trail"
+      ]
     },
     {
       "id": 3,
@@ -54,7 +64,12 @@
       "explanation": "The documented instruction reads: 'Extract exact quotes from the policy that are most relevant to GDPR and CCAA compliance. If you can't find relevant quotes, state \"No relevant quotes found.\"'\n\n**Why the others are wrong**\n\n- **B.** A closest-available quote silently substitutes weak evidence for none — the analysis then rests on something irrelevant.\n- **C.** An empty string is indistinguishable from a formatting slip and carries no statement.\n- **D.** Searching until something is found guarantees a result regardless of whether one exists.\n\nThis is the allow-uncertainty principle applied at the evidence step, and it is the same shape as a nullable schema field: give absence an explicit, legal representation, or the system will manufacture presence.",
       "examTrick": "Every evidence step needs a 'nothing found' branch. Otherwise absence gets manufactured into presence.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Explicit Absence", "No Quotes Found", "Manufactured Evidence"]
+      "tags": [
+        "NEW TOPIC",
+        "Explicit Absence",
+        "No Quotes Found",
+        "Manufactured Evidence"
+      ]
     },
     {
       "id": 4,
@@ -71,7 +86,12 @@
       "explanation": "'For each claim, find a direct quote from the documents that supports it. If you can't find a supporting quote for a claim, remove that claim from the press release and mark where it was removed with empty [] brackets.'\n\n**Why the others are wrong**\n\n- **B.** Keeping an unsupported claim leaves it available to be read as fact.\n- **C.** Rewriting to fit available evidence is motivated reasoning.\n- **D.** A silent drop is the subtly wrong answer: the output looks complete while a gap exists. Marking it makes the omission auditable.\n\nThe marker is what separates this from silent failure. A reader can see that something was asserted and could not be supported, which is itself information.",
       "examTrick": "Remove unsupported claims AND MARK the removal. A silent drop produces a document that lies by omission.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Claim Retraction", "Visible Gaps", "Audit Markers"]
+      "tags": [
+        "NEW TOPIC",
+        "Claim Retraction",
+        "Visible Gaps",
+        "Audit Markers"
+      ]
     },
     {
       "id": 5,
@@ -88,7 +108,12 @@
       "explanation": "'When the verifier agents can't check a claim, such as after a rate limit or API error, the report lists that claim as unverified instead of counting it as refuted.' The report otherwise cites sources per claim, 'with claims that didn't survive cross-checking already filtered out.'\n\n**Why the others are wrong**\n\n- **B.** Merging 'could not check' with 'checked and refuted' loses the distinction between absence of evidence and evidence of absence.\n- **C.** Verified means checked; it was not.\n- **D.** A transient infrastructure failure should not discard an entire research run.\n\nThree distinct outcomes — verified, refuted, unverifiable — need three representations. It is the same principle as an extraction field that can be extracted, not present, or illegible.",
       "examTrick": "Verified / refuted / unverifiable are THREE states. Collapsing to two loses the reason a human should look.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Unverified vs Refuted", "Three States", "Cross-Checking"]
+      "tags": [
+        "NEW TOPIC",
+        "Unverified vs Refuted",
+        "Three States",
+        "Cross-Checking"
+      ]
     },
     {
       "id": 6,
@@ -105,7 +130,12 @@
       "explanation": "The documented route to auditability is citation: 'Make Claude's response auditable by having it cite quotes and sources for each of its claims.' A number attached to a conclusion tells a reviewer how the model felt, not what supports the conclusion — there is nothing to check.\n\n**Why the others are wrong**\n\n- **B.** No fixed bias is documented.\n- **C.** A declared confidence field is returned normally.\n- **D.** Both numeric and enum forms are expressible in a schema.\n\nThe nuance worth holding: confidence is genuinely useful as a ROUTING signal — it decides who looks at what — but it is not a substitute for provenance, which decides what a reviewer can verify once they look. The two serve different jobs and a good design carries both.",
       "examTrick": "Confidence ROUTES; provenance VERIFIES. Different jobs — carry both, and never let a score stand in for evidence.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Confidence vs Provenance", "Auditability", "Complementary Signals"]
+      "tags": [
+        "NEW TOPIC",
+        "Confidence vs Provenance",
+        "Auditability",
+        "Complementary Signals"
+      ]
     },
     {
       "id": 7,
@@ -122,7 +152,12 @@
       "explanation": "Closed schemas return only declared keys, so anything a router or reviewer needs must be modelled. Pairing value, confidence, and source_span per field gives a router a per-field signal and gives a reviewer the exact text to check.\n\n**Why the others are wrong**\n\n- **B.** A document-level score cannot tell you WHICH field to review, so reviewers re-check everything.\n- **C.** Downstream inference has less information than the model had at extraction time.\n- **D.** A boolean collapses degree into a threshold and still carries no evidence.\n\nGranularity is the point: routing and verification both operate per FIELD, so the signals must exist per field.",
       "examTrick": "Model uncertainty at the FIELD level. A document-level score cannot direct a reviewer anywhere useful.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Per-Field Signals", "Granularity", "Schema Design"]
+      "tags": [
+        "NEW TOPIC",
+        "Per-Field Signals",
+        "Granularity",
+        "Schema Design"
+      ]
     },
     {
       "id": 8,
@@ -139,7 +174,12 @@
       "explanation": "A signal that never varies cannot discriminate. The documented remedies attack the cause: give explicit permission to express uncertainty ('Allow Claude to say I don't know'), ground values in extracted quotes so low confidence has something concrete to attach to, and make absence legally expressible so the model is not forced to assert.\n\n**Why the others are wrong**\n\n- **B.** The type is not the issue; an enum can be uniformly 'high' too.\n- **C.** Downstream computation has less information than extraction did.\n- **D.** Temperature adds variance, not calibration — random confidence is no better than constant confidence.\n\nThe test to remember: a routing signal is only useful if it VARIES with correctness. Measure that before trusting it.",
       "examTrick": "A constant signal routes nothing. Check that confidence actually varies with correctness before building on it.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Calibration", "Signal Variance", "Routing Validity"]
+      "tags": [
+        "NEW TOPIC",
+        "Calibration",
+        "Signal Variance",
+        "Routing Validity"
+      ]
     },
     {
       "id": 9,
@@ -156,7 +196,12 @@
       "explanation": "This applies the eval guidance directly: measure at the granularity of the decision, segment by the dimension that might vary, and use volume rather than a handful of hand-graded cases. If low-confidence items are not measurably more error-prone, routing on confidence spends reviewer time no better than random sampling.\n\n**Why the others are wrong**\n\n- **B.** A high average says nothing about discrimination.\n- **C.** Presence is not calibration.\n- **D.** Cross-model comparison does not establish that either tracks correctness.\n\nThe segmentation matters for a specific reason: confidence can be well calibrated on the formats the model has seen and badly calibrated on an unusual vendor layout, and an aggregate number hides exactly that.",
       "examTrick": "Validate a routing signal by measuring error rate BY confidence level, segmented. Aggregates hide format-specific breakdown.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Signal Validation", "Segmented Measurement", "Eval Application"]
+      "tags": [
+        "NEW TOPIC",
+        "Signal Validation",
+        "Segmented Measurement",
+        "Eval Application"
+      ]
     },
     {
       "id": 10,
@@ -173,7 +218,12 @@
       "explanation": "'External knowledge restriction: Explicitly instruct Claude to only use information from provided documents and not its general knowledge.' There is no parameter for it, which is why the docs pair it with citation verification and note that the techniques 'don't eliminate them entirely.'\n\n**Why the others are wrong**\n\n- **B.** No such parameter exists.\n- **C.** Removing tools stops retrieval, not parametric recall.\n- **D.** Capability reduction is not a grounding strategy and costs accuracy elsewhere.\n\nThis is the guidance-versus-enforcement distinction inside prompt engineering: the instruction shifts behaviour, and the verification step is what checks whether it held. Instruct AND verify.",
       "examTrick": "Knowledge restriction is an INSTRUCTION, not a switch. Advisory, so always pair it with claim-level verification.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Knowledge Restriction", "Advisory Limits", "Instruct and Verify"]
+      "tags": [
+        "NEW TOPIC",
+        "Knowledge Restriction",
+        "Advisory Limits",
+        "Instruct and Verify"
+      ]
     },
     {
       "id": 11,
@@ -190,7 +240,12 @@
       "explanation": "'Best-of-N verification: Run Claude through the same prompt multiple times and compare outputs. Inconsistencies across outputs could indicate hallucinations.' The claim is one-directional: inconsistency flags a problem; agreement is not proof.\n\n**Why the others are wrong**\n\n- **B, C.** Repeated runs can agree on the same wrong answer, particularly when the error stems from the prompt or the source rather than from sampling variance.\n- **D.** It is an external consistency check, not a calibrated internal signal.\n\nThe asymmetry is what makes it useful as a routing input rather than a verdict: disagreement is a strong reason to route an item to a human, while agreement is not a reason to skip verification.",
       "examTrick": "Best-of-N: disagreement is a strong route-to-human signal; agreement is weak evidence, never proof.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Best-of-N", "Asymmetric Evidence", "Routing Input"]
+      "tags": [
+        "NEW TOPIC",
+        "Best-of-N",
+        "Asymmetric Evidence",
+        "Routing Input"
+      ]
     },
     {
       "id": 12,
@@ -207,7 +262,12 @@
       "explanation": "The documented instruction is to analyse 'referencing the quotes by number. Only base your analysis on the extracted quotes.' Numbering creates a checkable link per conclusion — and its absence is equally informative, since an unreferenced conclusion is one the system itself could not ground.\n\n**Why the others are wrong**\n\n- **B.** Token savings are incidental.\n- **C.** Processing order is not the mechanism.\n- **D.** It is guidance, not required syntax.\n\nThe design insight: a good provenance scheme produces a detectable NEGATIVE. If unsupported output is indistinguishable from supported output, the scheme adds decoration rather than assurance.",
       "examTrick": "A good provenance scheme makes MISSING evidence detectable. If you can't spot the gap, it's decoration.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Numbered References", "Detectable Negatives", "Review Priority"]
+      "tags": [
+        "NEW TOPIC",
+        "Numbered References",
+        "Detectable Negatives",
+        "Review Priority"
+      ]
     },
     {
       "id": 13,
@@ -224,7 +284,12 @@
       "explanation": "Structured outputs constrain responses so the schema is satisfied by construction. A required non-nullable string can only be satisfied by producing text, so absent data is replaced with something plausible and schema-valid.\n\n**Why the others are wrong**\n\n- **B.** An empty string is a string, indistinguishable from a legitimately empty value and not a statement of absence.\n- **C.** No error occurs; the output is valid and wrong.\n- **D.** Nullability is precisely how absence is expressed to the model.\n\nThe consequence for this whole topic: schema design is the FIRST provenance decision. If the schema cannot express 'not found', no downstream verification, confidence field, or routing rule can recover the information that was never allowed to exist.",
       "examTrick": "Schema design is the first provenance decision. What the schema forbids expressing, nothing downstream can recover.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Schema as Provenance", "Forced Fabrication", "Upstream Decisions"]
+      "tags": [
+        "NEW TOPIC",
+        "Schema as Provenance",
+        "Forced Fabrication",
+        "Upstream Decisions"
+      ]
     },
     {
       "id": 14,
@@ -241,7 +306,12 @@
       "explanation": "Enums are supported for strings, numbers, booleans, and nulls, and grammar-constrained sampling means a value outside the enum cannot be emitted. Without an escape member, an out-of-scope document is silently misclassified into the closest listed value — a confident, schema-valid error.\n\n**Why the others are wrong**\n\n- **B.** A closed list guarantees misclassification of anything unseen.\n- **C.** A magic numeric sentinel is ambiguous with a real category and unreadable downstream.\n- **D.** Free text abandons the constraint entirely, losing the parseability the enum provided.\n\nNote the documented caveat that also affects reliability: 'Enum values are case-sensitive; Claude may fail if values have inconsistent capitalization across your schema.'",
       "examTrick": "A closed enum with no escape = confident misclassification, never an error. And enum values are CASE-SENSITIVE.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Enum Escape", "Silent Misclassification", "Case Sensitivity"]
+      "tags": [
+        "NEW TOPIC",
+        "Enum Escape",
+        "Silent Misclassification",
+        "Case Sensitivity"
+      ]
     },
     {
       "id": 15,
@@ -258,7 +328,12 @@
       "explanation": "Defensibility requires answering 'what supports THIS statement'. The documented techniques compose to exactly that: <source> metadata identifies where, verbatim quotes capture what the source says, and numbered references bind each conclusion to a specific span.\n\n**Why the others are wrong**\n\n- **B.** Reproducing the same unsupported claim proves nothing; reproducibility is not provenance.\n- **C.** A score is not evidence.\n- **D.** Useful metadata for reproducing a run, but it still does not say what supports a particular conclusion.\n\nThe distinction to carry: reproducibility answers 'would we get this again', provenance answers 'why is this true'. An auditor asks the second question.",
       "examTrick": "Reproducibility ≠ provenance. 'Would we get this again' is a different question from 'why is this true'.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Defensibility", "Claim-Level Binding", "Auditor Question"]
+      "tags": [
+        "NEW TOPIC",
+        "Defensibility",
+        "Claim-Level Binding",
+        "Auditor Question"
+      ]
     },
     {
       "id": 16,
@@ -275,7 +350,12 @@
       "explanation": "'XML tags help Claude parse complex prompts unambiguously, especially when your prompt mixes instructions, context, examples, and variable inputs. Wrapping each type of content in its own tag (for example, <instructions>, <context>, <input>) reduces misinterpretation.'\n\n**Why the others are wrong**\n\n- **B.** The system parameter is for standing instructions — putting untrusted content there elevates it rather than isolating it.\n- **C.** Escaping punctuation does not establish a role boundary.\n- **D.** Temperature is unrelated.\n\nClaude Code applies the same instinct structurally: the ultracode keyword is an opt-in 'only in a prompt you type yourself' and does not trigger from 'a webhook payload or pull request comment relayed into the conversation'. Provenance of the INPUT matters as much as provenance of the output — knowing where text came from determines how much authority it should carry.",
       "examTrick": "Delimit content types so untrusted text reads as DATA. Input provenance governs how much authority text gets.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Input Provenance", "XML Delimiting", "Untrusted Content"]
+      "tags": [
+        "NEW TOPIC",
+        "Input Provenance",
+        "XML Delimiting",
+        "Untrusted Content"
+      ]
     },
     {
       "id": 17,
@@ -292,7 +372,12 @@
       "explanation": "Provenance answers WHERE, not whether the origin deserves trust. The <source> subtag exists precisely so that judgement remains available downstream — a reviewer who can see the source can weigh it; one who sees only a quote cannot.\n\n**Why the others are wrong**\n\n- **B.** Discarding silently removes information a reviewer might weigh differently.\n- **C.** Support by an unreliable source is weaker evidence, not stronger. Confusing 'faithfully extracted' with 'true' is a common and consequential error.\n- **D.** Averaging destroys the per-claim attribution that makes review possible.\n\nThe distinction to hold: grounding guarantees faithfulness to the source, not truth. A perfectly grounded extraction from a wrong document is a wrong answer, correctly attributed — which is exactly why the source must travel with the claim.",
       "examTrick": "Grounding = faithful to the source, NOT true. Keep the source attached so someone can judge the source itself.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Faithfulness vs Truth", "Source Reliability", "Reviewer Judgement"]
+      "tags": [
+        "NEW TOPIC",
+        "Faithfulness vs Truth",
+        "Source Reliability",
+        "Reviewer Judgement"
+      ]
     },
     {
       "id": 18,
@@ -309,7 +394,12 @@
       "explanation": "Structured outputs are rated 'Guaranteed valid JSON: Yes (grammar-constrained)' with 'Parsing errors: Never'. That is a shape guarantee. Nothing in it checks a value against a document, which is what quote grounding, external knowledge restriction, and citation verification do.\n\n**Why the others are wrong**\n\n- **B.** Types constrain form, not truth — and value constraints like minimum, maximum, and pattern are not even supported, so range validation happens in your code.\n- **C.** Parseability is exactly what is guaranteed.\n- **D.** The shape guarantee is real and strong.\n\nThe combined design is the answer to most reliability scenarios: expressible uncertainty in the schema, grounding in the prompt, verification after generation, confidence-based routing, and structured capture of corrections.",
       "examTrick": "Schema = SHAPE. Grounding = FAITHFULNESS. Neither substitutes for the other; production systems need both.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Shape vs Faithfulness", "Guarantee Boundaries", "Combined Design"]
+      "tags": [
+        "NEW TOPIC",
+        "Shape vs Faithfulness",
+        "Guarantee Boundaries",
+        "Combined Design"
+      ]
     },
     {
       "id": 19,
@@ -326,7 +416,12 @@
       "explanation": "The documented M&A example ends with exactly that instruction, illustrating 'Allow Claude to say I don't know: Explicitly give Claude permission to admit uncertainty. This simple technique can drastically reduce false information.'\n\n**Why the others are wrong**\n\n- **B.** Probabilities are not the documented technique here and share the calibration problem.\n- **C.** An assumptions list is useful but does not license declining to answer.\n- **D.** Blanket hedging degrades every statement equally, including well-supported ones — it destroys the discrimination you want.\n\nNote what makes the documented phrasing work: it names the CONDITION (unsure, or the source lacks information) and supplies the exact WORDING to use. That makes the escape hatch specific and detectable downstream, rather than leaving the model to invent its own hedge.",
       "examTrick": "A good uncertainty escape names the CONDITION and the exact WORDING — so it is usable and detectable, not vague hedging.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Permission to Decline", "Specific Wording", "Detectable Hedge"]
+      "tags": [
+        "NEW TOPIC",
+        "Permission to Decline",
+        "Specific Wording",
+        "Detectable Hedge"
+      ]
     },
     {
       "id": 20,
@@ -343,7 +438,12 @@
       "explanation": "'Remember, while these techniques significantly reduce hallucinations, they don't eliminate them entirely. Always validate critical information, especially for high-stakes decisions.'\n\n**Why the others are wrong**\n\n- **B.** Explicitly contradicted.\n- **C.** The 20k figure applies to the quote-extraction technique specifically.\n- **D.** Structured outputs address shape, not factual accuracy — they cannot supersede grounding.\n\nThis caveat is why the human-review-routing objective exists as a separate design concern: techniques reduce the RATE, routing handles the RESIDUAL, and provenance makes the residual reviewable when it reaches a human. A system with grounding but no routing has no plan for the cases grounding misses.",
       "examTrick": "Techniques reduce the rate, routing handles the residual, provenance makes it reviewable. All three, or you have a gap.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Residual Risk", "Three-Part Design", "High-Stakes Validation"]
+      "tags": [
+        "NEW TOPIC",
+        "Residual Risk",
+        "Three-Part Design",
+        "High-Stakes Validation"
+      ]
     },
     {
       "id": 21,
@@ -360,7 +460,12 @@
       "explanation": "The same shape recurs at every layer. A nullable field lets a schema say 'not present'. An 'other' enum member lets a classifier say 'none of these'. 'No relevant quotes found' lets an evidence step say 'nothing here'. Empty [] brackets let a document say 'a claim was removed'. And 'unverified' lets a report say 'we could not check' rather than 'we refuted'.\n\n**Why the others are wrong**\n\n- **B.** Brevity is unrelated to whether uncertainty is expressible.\n- **C.** Deferring everything abandons automation; the point is deferring the RIGHT cases, which requires the signal this principle produces.\n- **D.** Retrying until confident manufactures the confidence rather than earning it.\n\nEvery constrained system produces SOMETHING. The design question is whether 'I don't know' is among the things it is permitted to produce — and whether that answer is visible to whatever comes next.",
       "examTrick": "One principle across every layer: make absence EXPRESSIBLE and VISIBLE, or the system will fabricate presence.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Unifying Principle", "Expressible Absence", "Cross-Layer Pattern"]
+      "tags": [
+        "NEW TOPIC",
+        "Unifying Principle",
+        "Expressible Absence",
+        "Cross-Layer Pattern"
+      ]
     }
   ]
 }

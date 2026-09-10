@@ -52,6 +52,8 @@ interface PracticeSessionProps {
   subject: string;
   /** Where to open the set — the resume point picked on the chapter screen. */
   startIndex?: number;
+  /** When true, ignore earlier session answers so user can retake fresh. */
+  clearPreviousAnswers?: boolean;
   /** Used to pre-fill questions already answered in an earlier session. */
   progress?: UserProgress;
   onFinish: () => void;
@@ -65,6 +67,7 @@ export default function PracticeSession({
   chapterName,
   subject,
   startIndex = 0,
+  clearPreviousAnswers = false,
   progress,
   onFinish,
   onSubmitAnswer
@@ -77,7 +80,7 @@ export default function PracticeSession({
 
   const [states, setStates] = useState<Record<number, QuestionState>>(() => {
     const seeded: Record<number, QuestionState> = {};
-    if (!progress) return seeded;
+    if (!progress || clearPreviousAnswers) return seeded;
     questions.forEach((q, index) => {
       const entry = progress.answeredQuestions[`${subject}:${chapterId}:${q.id}`];
       if (entry) {
@@ -286,35 +289,35 @@ export default function PracticeSession({
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in pb-12">
       {/* Session Status Bar */}
-      <div className="bg-white border border-slate-150 p-4 rounded-2xl space-y-3 shadow-xs">
+      <div className="bg-white border border-slate-100 p-4 sm:p-5 rounded-2xl space-y-3 shadow-3xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-0.5 min-w-0">
-            <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">
               {mode.charAt(0).toUpperCase() + mode.slice(1)} session
             </div>
-            <div className="text-sm font-bold font-display leading-tight truncate max-w-full md:max-w-md text-slate-800">
+            <div className="text-sm sm:text-base font-bold font-display leading-tight truncate max-w-full md:max-w-md text-slate-900">
               {chapterName}
             </div>
           </div>
           <div className="text-left sm:text-right shrink-0">
             <div className="text-xs text-slate-500">
-              Question <strong className="text-slate-800">{currentIndex + 1}</strong> of <strong className="text-slate-800">{questions.length}</strong>
+              Question <strong className="text-slate-900 font-bold">{currentIndex + 1}</strong> of <strong className="text-slate-900 font-bold">{questions.length}</strong>
               <span className="text-slate-400"> · {answeredCount} done</span>
             </div>
-            <div className="w-full sm:w-24 bg-slate-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
+            <div className="w-full sm:w-28 bg-slate-100 h-2 rounded-full mt-1.5 overflow-hidden">
               <div className="bg-indigo-600 h-full rounded-full transition-all duration-300" style={{ width: `${progressPercentage}%` }} />
             </div>
           </div>
         </div>
 
         {/* Set-level controls: jump anywhere, skip ahead to what's unfinished, restart. */}
-        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-50">
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
           <button
             onClick={() => setShowPalette((prev) => !prev)}
-            className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-2 rounded-lg border transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition-colors cursor-pointer ${
               showPalette
-                ? "bg-indigo-600 border-indigo-600 text-white"
-                : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                ? "bg-indigo-600 border-indigo-600 text-white shadow-3xs"
+                : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-3xs"
             }`}
           >
             {showPalette ? <X className="w-3.5 h-3.5" /> : <LayoutGrid className="w-3.5 h-3.5" />}
@@ -323,21 +326,21 @@ export default function PracticeSession({
           <button
             onClick={() => jumpTarget >= 0 && goTo(jumpTarget)}
             disabled={jumpTarget < 0}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-3xs"
           >
             <SkipForward className="w-3.5 h-3.5 text-indigo-500" />
             Next unanswered
           </button>
           <button
             onClick={handleRestart}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer shadow-3xs"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
             Start over
           </button>
           <button
             onClick={onFinish}
-            className="ml-auto text-[11px] font-semibold text-slate-400 hover:text-slate-600 px-2.5 py-2 transition-colors cursor-pointer"
+            className="ml-auto text-xs font-semibold text-slate-400 hover:text-slate-600 px-2.5 py-1.5 transition-colors cursor-pointer"
           >
             End session
           </button>
@@ -383,7 +386,7 @@ export default function PracticeSession({
       </div>
 
       {/* Main Card */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xs">
+      <div className="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 md:p-8 shadow-3xs">
 
         {/* Difficulty, Source and Importance */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-5 text-[11px]">
@@ -518,7 +521,7 @@ export default function PracticeSession({
               <button
                 onClick={handleSubmit}
                 disabled={!selectedOption || isSubmitting}
-                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all cursor-pointer shadow-3xs"
               >
                 {isSubmitting ? "Submitting…" : "Submit Answer"}
               </button>
@@ -542,7 +545,7 @@ export default function PracticeSession({
 
       {/* Answer Screen / Explanations Panel (Appears after answer submitted) */}
       {isAnswered && (
-        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 space-y-6 animate-slide-up">
+        <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 sm:p-6 md:p-8 space-y-6 animate-slide-up shadow-3xs">
 
           {/* Correction Banner */}
           <div className="flex items-start gap-4">

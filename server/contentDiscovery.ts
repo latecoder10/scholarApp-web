@@ -16,6 +16,7 @@
 import fs from "fs";
 import path from "path";
 import { getExamById } from "../shared/exams";
+import { compareSubjects, compareChapters } from "../shared/sorting";
 
 export interface DiscoveredChapter {
   id: string;
@@ -168,7 +169,14 @@ export function discoverSubjects(contentDir: string): DiscoveredSubject[] {
     });
   }
 
-  return Object.values(subjectsMap);
+  // Ensure deterministic, natural ordering for all subjects and their nested chapters
+  const allSubjects = Object.values(subjectsMap);
+  for (const sub of allSubjects) {
+    sub.chapters.sort(compareChapters);
+  }
+  allSubjects.sort(compareSubjects);
+
+  return allSubjects;
 }
 
 /**

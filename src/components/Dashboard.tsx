@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Subject, UserProgress, Chapter, parseProgressKey } from "../types";
 import { EXAM_REGISTRY, getExamById, resolveExamForSubject, resolveExamForEntry } from "../../shared/exams";
+import { compareSubjects } from "../../shared/sorting";
 import { getExamIcon, getExamColorClasses, getColorClasses } from "../lib/examTheme";
 
 interface DashboardProps {
@@ -58,7 +59,11 @@ export default function Dashboard({
 
   // Mock Tests is a subject bucket, not a curriculum domain — exclude it from the domain grid display.
   const domainSubjects = useMemo(
-    () => filteredSubjects.filter((s) => s.name !== "Mock Tests" && !s.name.toLowerCase().includes("mock")),
+    () =>
+      filteredSubjects
+        .filter((s) => s.name !== "Mock Tests" && !s.name.toLowerCase().includes("mock"))
+        .slice()
+        .sort(compareSubjects),
     [filteredSubjects]
   );
 
@@ -183,135 +188,99 @@ export default function Dashboard({
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* 1. Page Header */}
-      <div className="bg-white border border-slate-150 p-4 sm:p-6 sm:p-7 rounded-2xl shadow-xs">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
-          <div className="flex items-start gap-4">
-            <div className={`p-3 rounded-xl shrink-0 border ${activeColors.iconBg} ${activeColors.iconBorder} ${activeColors.iconText}`}>
-              <ActiveExamIcon className="w-6 h-6" />
-            </div>
-            <div className="space-y-1.5">
-              <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                {selectedExam === "all" ? "Dashboard" : `${currentExamConfig.shortName} Dashboard`}
-              </h1>
-              <p className="text-slate-500 text-xs sm:text-sm max-w-2xl leading-relaxed">
-                {currentExamConfig.description}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <button
-              onClick={onOpenExamSelector}
-              className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all cursor-pointer shadow-3xs"
-            >
-              <Sparkles className="w-4 h-4 text-indigo-500" />
-              Switch Track
-            </button>
-            <button
-              onClick={() => onNavigate("mock-tests")}
-              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 min-h-11 sm:min-h-0 rounded-xl transition-all cursor-pointer shadow-xs"
-            >
-              <Award className="w-4 h-4" />
-              Mock Tests
-            </button>
-          </div>
+    <div className="space-y-6 animate-fade-in pb-12 w-full max-w-7xl mx-auto">
+      {/* 1. Page Header matching AnalyticsView convention */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
+            {selectedExam === "all" ? "OVERVIEW" : `${currentExamConfig.shortName} OVERVIEW`}
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight mt-0.5">
+            Dashboard
+          </h1>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
+            {currentExamConfig.description}
+          </p>
         </div>
       </div>
 
-      {/* 2. Top Stats Grid */}
+      {/* 2. Top Stats Grid - Proportional, Uniform Height */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Coverage Widget */}
-        <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs hover:shadow-md transition-all">
-          <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 tracking-wide uppercase">Syllabus Coverage</span>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-              <BookOpen className="w-5 h-5" />
+        <div className="bg-[#F8F7FF] border border-[#EDE9FE] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#EDE9FE] text-[#6366F1] flex items-center justify-center shrink-0">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {overallCoverage}%
             </div>
-          </div>
-          <div className="mt-4">
-            <span className="text-3xl font-bold font-display text-slate-800">{overallCoverage}%</span>
-            <span className="text-xs text-slate-400 ml-1.5 font-mono">({totalAttempted} / {totalQuestions} qns)</span>
-          </div>
-          <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
-            <div className="bg-blue-600 h-full rounded-full transition-all duration-500" style={{ width: `${overallCoverage}%` }} />
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Syllabus Coverage ({totalAttempted}/{totalQuestions})
+            </div>
           </div>
         </div>
 
         {/* Accuracy Widget */}
-        <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs hover:shadow-md transition-all">
-          <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 tracking-wide uppercase">Test Accuracy</span>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-              <TrendingUp className="w-5 h-5" />
+        <div className="bg-[#F4F8FE] border border-[#E0EEFD] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#E0EEFD] text-[#2563EB] flex items-center justify-center shrink-0">
+            <TrendingUp className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {overallAccuracy}%
             </div>
-          </div>
-          <div className="mt-4">
-            <span className="text-3xl font-bold font-display text-slate-800">{overallAccuracy}%</span>
-            <span className="text-xs text-slate-400 ml-1.5 font-mono">({correctCount} solved)</span>
-          </div>
-          <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
-            <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${overallAccuracy}%` }} />
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Test Accuracy ({correctCount} solved)
+            </div>
           </div>
         </div>
 
         {/* Readiness Score Widget */}
-        <div className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs hover:shadow-md transition-all">
-          <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 tracking-wide uppercase">Readiness Index</span>
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-              <Award className="w-5 h-5" />
+        <div className="bg-[#F4FBF7] border border-[#DCFCE7] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-[#DCFCE7] text-[#10B981] flex items-center justify-center shrink-0">
+            <Award className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {readinessScore}%
             </div>
-          </div>
-          <div className="mt-4">
-            <span className="text-3xl font-bold font-display text-slate-800">{readinessScore}%</span>
-            <span className="text-xs text-slate-400 ml-1.5 font-mono">
-              {currentExamConfig.readinessTargetLabel || "Mastery Level"}
-            </span>
-          </div>
-          <div className="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
-            <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: `${readinessScore}%` }} />
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate">
+              Readiness Index ({currentExamConfig.readinessTargetLabel || "Mastery Level"})
+            </div>
           </div>
         </div>
 
         {/* Mistakes Widget */}
         <div 
           onClick={() => onNavigate("mistakes")}
-          className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs hover:shadow-md transition-all cursor-pointer group"
+          className="bg-[#FFF7F4] border border-[#FEE8D8] p-4 sm:p-5 rounded-2xl shadow-3xs flex items-center gap-3.5 cursor-pointer hover:border-orange-200 transition-all group"
         >
-          <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-slate-400 tracking-wide uppercase">Mistake Book</span>
-            <div className="p-2 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-100 transition-colors">
-              <AlertTriangle className="w-5 h-5" />
+          <div className="w-11 h-11 rounded-xl bg-[#FEE8D8] text-[#EA580C] flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 leading-tight">
+              {filteredMistakes.length}
             </div>
-          </div>
-          <div className="mt-4">
-            <span className="text-3xl font-bold font-display text-slate-800">{filteredMistakes.length}</span>
-            <span className="text-xs text-slate-400 ml-1.5 font-mono">unresolved items</span>
-          </div>
-          <div className="mt-3 flex items-center text-xs text-rose-600 font-semibold font-mono gap-1 group-hover:translate-x-1 transition-transform">
-            Go to Mistake Book <ChevronRight className="w-3.5 h-3.5" />
+            <div className="text-xs font-medium text-slate-400 mt-0.5 truncate flex items-center gap-1 group-hover:text-orange-600 transition-colors">
+              Mistake Book <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Track-Specific Domain / Paper Overview — driven by the exam registry:
-          exams without `papers` get a domain grid, exams with `papers` get one
-          block per paper (not hardcoded to exactly two), and "all" gets one
-          chooser card per registered exam. */}
+      {/* 3. Track-Specific Domain / Paper Overview */}
       {selectedExam !== "all" && (!currentExamConfig.papers || currentExamConfig.papers.length === 0) ? (
-        <div className="bg-white border border-slate-100 p-4 sm:p-6 rounded-3xl shadow-xs">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-4 border-b border-slate-100">
-            <div>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wide border ${activeColors.badgeBg} ${activeColors.badgeBorder} ${activeColors.badgeText}`}>
-                {currentExamConfig.domainsLabel || `${currentExamConfig.category} Domains`}
-              </span>
-              <h3 className="font-display font-extrabold text-slate-900 text-lg mt-1">
-                {currentExamConfig.name} Syllabus
+        <div className="bg-white border border-slate-100 p-5 sm:p-6 rounded-2xl shadow-3xs">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[#4F46E5]" />
+              <h3 className="font-display text-base font-bold text-slate-900">
+                {currentExamConfig.name} Curriculum Domains
               </h3>
             </div>
-            <span className="text-xs text-slate-500 font-semibold bg-slate-50 border border-slate-200 px-3 py-1 rounded-lg">
+            <span className="text-xs text-slate-500 font-semibold bg-slate-50 border border-slate-150 px-2.5 py-1 rounded-lg">
               {domainSubjects.length} domains • {totalQuestions} questions
             </span>
           </div>
@@ -326,11 +295,11 @@ export default function Dashboard({
                 <div
                   key={sub.name}
                   onClick={() => onNavigate("subjects")}
-                  className="p-4 rounded-2xl border border-slate-150 hover:border-slate-300 hover:bg-slate-50/40 transition-all cursor-pointer group"
+                  className="p-4 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-slate-50/50 transition-all cursor-pointer group"
                 >
                   <div className="flex items-center justify-between">
                     <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md ${activeColors.badgeBg} ${activeColors.badgeText}`}>
-                      Domain {idx + 1}
+                      {sub.paper ? sub.paper.replace(/-/g, " ") : `Domain ${idx + 1}`}
                     </span>
                     <span className="text-xs font-mono text-slate-400 font-semibold">{sub.chapters.length} Modules</span>
                   </div>
@@ -354,15 +323,18 @@ export default function Dashboard({
           {currentExamConfig.papers.map((paper) => {
             const paperColors = getColorClasses(paper.color || currentExamConfig.color);
             return (
-              <div key={paper.id} className="bg-white border border-slate-100 p-5 rounded-2xl shadow-xs relative overflow-hidden">
+              <div key={paper.id} className="bg-white border border-slate-100 p-5 sm:p-6 rounded-2xl shadow-3xs relative overflow-hidden">
                 <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                  <div>
-                    {paper.stageLabel && (
-                      <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-md uppercase border ${paperColors.badgeBg} ${paperColors.badgeBorder} ${paperColors.badgeText}`}>
-                        {paper.stageLabel}
-                      </span>
-                    )}
-                    <h3 className="font-display font-extrabold text-slate-800 text-sm mt-1">{paper.fullLabel || paper.label}</h3>
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-[#4F46E5]" />
+                    <div>
+                      {paper.stageLabel && (
+                        <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-md uppercase border ${paperColors.badgeBg} ${paperColors.badgeBorder} ${paperColors.badgeText} mr-2`}>
+                          {paper.stageLabel}
+                        </span>
+                      )}
+                      <span className="font-display font-bold text-slate-900 text-sm">{paper.fullLabel || paper.label}</span>
+                    </div>
                   </div>
                   {paper.tag && (
                     <span className="text-xs font-mono text-slate-400 font-bold bg-slate-50 px-2 py-1 rounded-md">{paper.tag}</span>
@@ -388,24 +360,24 @@ export default function Dashboard({
       ) : (
         /* All Examinations View */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {EXAM_REGISTRY.map((exam, idx) => {
+          {EXAM_REGISTRY.map((exam) => {
             const Icon = getExamIcon(exam);
             const colors = getExamColorClasses(exam);
             return (
               <div
                 key={exam.id}
                 onClick={() => onNavigate("subjects")}
-                className={`bg-white border-2 p-6 rounded-3xl shadow-3xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden group ${colors.badgeBorder}`}
+                className={`bg-white border border-slate-100 hover:border-indigo-200 p-5 sm:p-6 rounded-2xl shadow-3xs hover:shadow-2xs transition-all cursor-pointer relative overflow-hidden group`}
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className={`p-2.5 rounded-xl ${colors.iconBg} ${colors.iconText}`}>
-                    <Icon className="w-6 h-6" />
+                    <Icon className="w-5 h-5" />
                   </div>
                   <div>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wide ${colors.badgeBg} ${colors.badgeText}`}>
                       {exam.category}
                     </span>
-                    <h4 className="font-display font-extrabold text-slate-900 text-base">{exam.shortName}</h4>
+                    <h4 className="font-display font-bold text-slate-900 text-base">{exam.shortName}</h4>
                   </div>
                 </div>
                 <p className="text-xs text-slate-500 line-clamp-2">
@@ -422,18 +394,18 @@ export default function Dashboard({
       )}
 
       {/* 4. Action and Info Panels */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Column (8 cols): Continue Learning & Weak Areas */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-6">
           
           {/* Continue Learning */}
           {continueChapter && (
-            <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs">
+            <div className="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 shadow-3xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-md text-[10px] font-bold tracking-wide uppercase">
+                    <span className="px-2.5 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-md text-[10px] font-bold tracking-wide uppercase">
                       {continueChapter.subjectName}
                     </span>
                     {continueChapter.chapter.exam && (
@@ -448,7 +420,7 @@ export default function Dashboard({
                   <p className="text-slate-400 text-xs line-clamp-1">
                     {continueChapter.chapter.description || "Pick up where you left off to accelerate your exam readiness."}
                   </p>
-                  <div className="flex items-center gap-4 text-xs font-mono text-slate-400 pt-1.5">
+                  <div className="flex items-center gap-4 text-xs font-mono text-slate-400 pt-1">
                     <span>Questions: <strong>{continueChapter.chapter.questionsCount}</strong></span>
                     <span>•</span>
                     <span>Attempted: <strong>{
@@ -458,7 +430,7 @@ export default function Dashboard({
                 </div>
                 <button 
                   onClick={() => onSelectChapter(continueChapter!.subjectName, continueChapter!.chapter)}
-                  className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm px-5 py-3 rounded-xl transition-all shadow-sm hover:shadow-indigo-100 shrink-0 cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-3xs hover:shadow-2xs transition-all shrink-0 cursor-pointer"
                 >
                   <Play className="w-4 h-4 fill-white text-white" /> Continue Practice
                 </button>
@@ -467,18 +439,21 @@ export default function Dashboard({
           )}
 
           {/* Weak Chapters (If any exist) */}
-          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-display text-base font-bold text-slate-800 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-500" /> Areas to focus on
-              </h3>
-              <span className="text-xs text-slate-400">Accuracy below 60%</span>
+          <div className="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 shadow-3xs">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-[#EA580C]" />
+                <h3 className="font-display text-base font-bold text-slate-900">
+                  Areas to Focus On
+                </h3>
+              </div>
+              <span className="text-xs text-slate-400 font-medium">Accuracy below 60%</span>
             </div>
 
             {weakChapters.length > 0 ? (
-              <div className="divide-y divide-slate-50">
+              <div className="divide-y divide-slate-100">
                 {weakChapters.map(({ chapter, attempted, correct, accuracy }) => (
-                  <div key={chapter.id} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div key={chapter.id} className="py-3.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-slate-800 font-display">{chapter.name}</span>
@@ -494,7 +469,7 @@ export default function Dashboard({
                     </div>
                     <button
                       onClick={() => onSelectChapter(chapter.subject, chapter)}
-                      className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-lg hover:bg-indigo-100 hover:border-indigo-200 transition-all shrink-0 self-start sm:self-center cursor-pointer"
+                      className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-all shrink-0 self-start sm:self-center cursor-pointer"
                     >
                       Practice <ChevronRight className="w-3.5 h-3.5" />
                     </button>
@@ -511,13 +486,13 @@ export default function Dashboard({
           </div>
 
           {/* Quick Help / Exam Guide Info */}
-          <div className="bg-slate-50 border border-slate-200/80 p-4 sm:p-6 rounded-2xl flex items-start gap-4">
-            <div className="p-2 bg-amber-50 border border-amber-100 rounded-lg text-amber-600 shrink-0">
+          <div className="bg-[#F8F7FF] border border-[#EDE9FE] p-4 sm:p-5 rounded-2xl flex items-start gap-3.5">
+            <div className="p-2 bg-[#EDE9FE] text-[#6366F1] rounded-xl shrink-0">
               <Lightbulb className="w-4 h-4" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-slate-800 font-display">
-                {currentExamConfig.strategyTip?.title || "Study tip"}
+              <h4 className="text-sm font-bold text-slate-900 font-display">
+                {currentExamConfig.strategyTip?.title || "Study Strategy Tip"}
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed mt-1">
                 {currentExamConfig.strategyTip?.body ||
@@ -530,12 +505,15 @@ export default function Dashboard({
 
         {/* Right Column (4 cols): Recent Activity Feed */}
         <div className="lg:col-span-4">
-          <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 shadow-xs h-full flex flex-col">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-50 mb-4">
-              <h3 className="font-display text-base font-bold text-slate-800 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-slate-500" /> Recent Activity
-              </h3>
-              <span className="text-[10px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md">Live</span>
+          <div className="bg-white border border-slate-100 rounded-2xl p-5 sm:p-6 shadow-3xs h-full flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-slate-500" />
+                <h3 className="font-display text-base font-bold text-slate-900">
+                  Recent Activity
+                </h3>
+              </div>
+              <span className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">Live</span>
             </div>
 
             {progress.recentActivity.length > 0 ? (

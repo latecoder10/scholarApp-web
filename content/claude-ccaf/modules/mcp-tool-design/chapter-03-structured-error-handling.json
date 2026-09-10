@@ -1,6 +1,6 @@
 {
   "subject": "Claude CCAF: Tool Design & MCP Integration",
-  "chapter": "Structured Error Handling & Error Categorization",
+  "chapter": "2.2b Structured Error Handling & Error Categorization",
   "exam": "Claude CCAF",
   "paper": "Domain-2",
   "description": "Protocol vs tool execution errors, 4 error categories (transient, validation, business, permission), isError boolean, and retryAfterMs metadata.",

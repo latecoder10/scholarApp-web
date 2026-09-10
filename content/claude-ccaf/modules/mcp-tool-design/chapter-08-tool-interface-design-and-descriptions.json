@@ -1,8 +1,8 @@
 {
-  "subject": "Claude CCAF: MCP & Tool Design",
-  "chapter": "4.8 Tool Interface Design, Descriptions & Response Shaping",
+  "subject": "Claude CCAF: Tool Design & MCP Integration",
+  "chapter": "2.8 Tool Interface Design, Descriptions & Response Shaping",
   "exam": "Claude CCAF",
-  "paper": "Domain-4",
+  "paper": "Domain-2",
   "description": "NEW TOPIC. Writing tool descriptions that drive reliable selection, input_examples for complex inputs, consolidating operations, namespacing, shaping tool responses for high signal, and the constraints on forced tool use. Grounded in the official Claude API define-tools documentation.",
   "questions": [
     {
@@ -20,7 +20,12 @@
       "explanation": "'Provide extremely detailed descriptions. This is by far the most important factor in tool performance.' The listed contents: what the tool does, when it should be used (and when it shouldn't), what each parameter means and how it affects behaviour, and 'Any important caveats or limitations, such as what information the tool does not return if the tool name is unclear.'\n\n**Why the others are wrong**\n\n- **B.** Over-constraining forces guessed values, the same failure as an all-required extraction schema.\n- **C.** Names matter for disambiguation but carry far less information than descriptions.\n- **D.** strict guarantees argument conformance, not correct selection.\n\nThe stated target length: 'Aim for at least 3-4 sentences for each tool description, more if the tool is complex.'",
       "examTrick": "3-4 sentences MINIMUM per description, including when NOT to use it and what it does not return.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Tool Descriptions", "3-4 Sentences", "Selection Reliability"]
+      "tags": [
+        "NEW TOPIC",
+        "Tool Descriptions",
+        "3-4 Sentences",
+        "Selection Reliability"
+      ]
     },
     {
       "id": 2,
@@ -37,7 +42,12 @@
       "explanation": "'Consolidate related operations into fewer tools. Rather than creating a separate tool for every action (create_pr, review_pr, merge_pr), group them into a single tool with an action parameter. Fewer, more capable tools reduce selection ambiguity and make your tool surface easier for Claude to navigate.'\n\n**Why the others are wrong**\n\n- **B.** More tools means more near-neighbours to disambiguate, and every definition costs tokens on every request.\n- **C.** Removing the parameter removes the model's ability to state its intent explicitly.\n- **D.** The opposite direction entirely.\n\nNote the tension with the previous item: descriptions should be long, and tool COUNT should be low. Both push the same way — invest depth in fewer, well-described tools.",
       "examTrick": "Consolidate with an action parameter. Fewer, richer tools beat many thin ones for both selection and token cost.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Tool Consolidation", "action Parameter", "Selection Ambiguity"]
+      "tags": [
+        "NEW TOPIC",
+        "Tool Consolidation",
+        "action Parameter",
+        "Selection Ambiguity"
+      ]
     },
     {
       "id": 3,
@@ -54,7 +64,12 @@
       "explanation": "'Use meaningful namespacing in tool names. When your tools span multiple services or resources, prefix names with the service (for example, github_list_prs, slack_send_message). This makes tool selection unambiguous as your library grows, and is especially important when using tool search.'\n\n**Why the others are wrong**\n\n- **B.** The regex is ^[a-zA-Z0-9_-]{1,64}$ — underscores are allowed but namespacing is not required by it.\n- **C.** Longer names cost marginally more, not less.\n- **D.** Namespacing is a naming convention, not a loading mechanism.\n\nThis mirrors MCP's own convention, where tools are addressed as mcp__<server>__<tool> — the server segment is the namespace.",
       "examTrick": "Namespace by service. Name regex is ^[a-zA-Z0-9_-]{1,64}$. Matters most under tool search.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Namespacing", "Name Regex", "Tool Search"]
+      "tags": [
+        "NEW TOPIC",
+        "Namespacing",
+        "Name Regex",
+        "Tool Search"
+      ]
     },
     {
       "id": 4,
@@ -71,7 +86,12 @@
       "explanation": "'Design tool responses to return only high-signal information. Return semantic, stable identifiers (for example, slugs or UUIDs) rather than opaque internal references, and include only the fields Claude needs to reason about its next step. Bloated responses waste context and make it harder for Claude to extract what matters.'\n\n**Why the others are wrong**\n\n- **B.** Full payloads are the documented anti-pattern — they waste context and bury the signal.\n- **C.** Structure is useful; the guidance is about VOLUME and identifier quality, not format.\n- **D.** Opaque internal references are exactly what the guidance says to avoid, because they carry no meaning the model can reason with.\n\nThe cost angle: tool_result blocks are input tokens on every subsequent request in the loop, so a bloated response is paid for repeatedly, not once.",
       "examTrick": "High-signal responses with SEMANTIC identifiers. Bloated tool results are re-paid on every later turn of the loop.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Response Shaping", "Semantic Identifiers", "Context Cost"]
+      "tags": [
+        "NEW TOPIC",
+        "Response Shaping",
+        "Semantic Identifiers",
+        "Context Cost"
+      ]
     },
     {
       "id": 5,
@@ -88,7 +108,12 @@
       "explanation": "'Add an optional input_examples field to your tool definition with an array of example input objects. Each example must be valid according to the tool's input_schema.' The requirements and limitations: schema validation with 'Invalid examples return a 400 error'; not supported for server-side tools or the computer use and browser use client toolsets; and token cost of '~20-50 tokens for simple examples, ~100-200 tokens for complex nested objects'. It is 'particularly useful for complex tools with nested objects, optional parameters, or format-sensitive inputs.'\n\n**Why the others are wrong**\n\n- **B.** They are INPUT examples.\n- **C.** Optional, and the docs say to 'Prioritize descriptions' first.\n- **D.** They are structured objects, not prose.\n\nThe documented example deliberately includes one entry that omits the optional unit field — demonstrating to the model that omission is legitimate.",
       "examTrick": "input_examples are schema-validated (400 if not), cost 20-200 tokens each, and can demonstrate that an optional field may be OMITTED.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "input_examples", "Token Cost", "Optional Parameters"]
+      "tags": [
+        "NEW TOPIC",
+        "input_examples",
+        "Token Cost",
+        "Optional Parameters"
+      ]
     },
     {
       "id": 6,
@@ -105,7 +130,12 @@
       "explanation": "This is the documented good example. The docs analyse it: 'The good description clearly explains what the tool does, when to use it, what data it returns, and what the ticker parameter means. The poor description is too brief and leaves Claude with many open questions about the tool's behavior and usage.' Option B is the documented POOR example verbatim.\n\n**Why the others are wrong**\n\n- **B, C, D.** All are too brief to guide selection or argument construction.\n\nNotice the four jobs the good description does: capability, constraints on valid input, what comes back and in what unit, and an explicit negative boundary ('will not provide any other information'). That last clause is what stops the model reaching for this tool when asked about market cap.",
       "examTrick": "A good description does four jobs: what it does, valid input constraints, what it returns (with units), and what it does NOT do.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Good vs Poor Description", "Negative Boundaries", "Units"]
+      "tags": [
+        "NEW TOPIC",
+        "Good vs Poor Description",
+        "Negative Boundaries",
+        "Units"
+      ]
     },
     {
       "id": 7,
@@ -122,7 +152,12 @@
       "explanation": "'Use the latest Claude Opus model, Claude Opus 5, for complex tools and ambiguous queries; it handles multiple tools better and seeks clarification when needed. Use Claude Haiku models for straightforward tools, but note they may infer missing parameters.'\n\n**Why the others are wrong**\n\n- **B.** Reversed.\n- **C.** The docs are explicit that behaviour differs, particularly around missing required parameters.\n- **D.** Haiku is recommended for straightforward tools, and cost matters.\n\nThe 'may infer missing parameters' warning is the design consequence: on a smaller model, an under-specified request produces a guessed argument rather than a clarifying question. Design your schemas and validation for that.",
       "examTrick": "Opus for complex/ambiguous (asks for clarification). Haiku for simple tools (may GUESS missing parameters).",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Model Selection", "Parameter Inference", "Tool Complexity"]
+      "tags": [
+        "NEW TOPIC",
+        "Model Selection",
+        "Parameter Inference",
+        "Tool Complexity"
+      ]
     },
     {
       "id": 8,
@@ -139,7 +174,12 @@
       "explanation": "'When you call the Claude API with the tools parameter, the API constructs a special system prompt from the tool definitions, tool configuration, and any user-specified system prompt.' The documented skeleton includes formatting instructions, the tool definitions in JSON Schema, your system prompt, and the tool configuration.\n\n**Why the others are wrong**\n\n- **B.** No test invocation occurs.\n- **C.** No adaptation happens.\n- **D.** It is a system prompt, not a user-message append.\n\nThis explains the token table from the pricing section: the tool-use system prompt is why tool_choice values cost different amounts, and why 'If no tools are provided, then a tool choice of none uses 0 additional system prompt tokens.'",
       "examTrick": "Tools become a constructed SYSTEM PROMPT. That is why tool_choice changes the token count.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Tool Use System Prompt", "Token Accounting", "Internals"]
+      "tags": [
+        "NEW TOPIC",
+        "Tool Use System Prompt",
+        "Token Accounting",
+        "Internals"
+      ]
     },
     {
       "id": 9,
@@ -156,7 +196,12 @@
       "explanation": "'Note that when you have tool_choice as any or tool, the API prefills the assistant message to force a tool to be used. This means that the models will not emit a natural language response or explanation before tool_use content blocks, even if explicitly asked to do so.' The documented workaround: 'If you would like the model to provide natural language context or explanations while still requesting that the model use a specific tool, you can use {\"type\": \"auto\"} for tool_choice (the default) and add explicit instructions in a user message. For example: What's the weather like in London? Use the get_weather tool in your response.'\n\n**Why the others are wrong**\n\n- **B, C, D.** None is documented.\n\nThe docs add reassurance on quality: 'Testing has shown that this should not reduce performance.'",
       "examTrick": "Forcing (any/tool) suppresses the model's explanatory text. Want both? Use auto + an explicit instruction in the user message.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Forced Tool Use", "Suppressed Explanation", "Workaround"]
+      "tags": [
+        "NEW TOPIC",
+        "Forced Tool Use",
+        "Suppressed Explanation",
+        "Workaround"
+      ]
     },
     {
       "id": 10,
@@ -173,7 +218,12 @@
       "explanation": "'When using manual extended thinking (thinking: {type: \"enabled\"}) with tool use, tool_choice: {\"type\": \"any\"} and tool_choice: {\"type\": \"tool\", \"name\": \"...\"} are not supported and result in an error. Only tool_choice: {\"type\": \"auto\"} (the default) and tool_choice: {\"type\": \"none\"} are compatible with manual extended thinking. Adaptive thinking, including on models where thinking is on by default such as Claude Opus 5, supports forced tool use.'\n\n**Why the others are wrong**\n\n- **B.** Reversed.\n- **C.** Adaptive thinking supports forcing.\n- **D.** There is a documented interaction that produces an error.\n\nA second constraint in the same area: 'Claude Mythos Preview does not support forced tool use. Requests with tool_choice any or tool return a 400 error on this model.'",
       "examTrick": "Manual extended thinking + forced tool use = error. Adaptive thinking is fine. Mythos Preview never supports forcing.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Thinking Interaction", "Forced Tool Use", "Model Constraints"]
+      "tags": [
+        "NEW TOPIC",
+        "Thinking Interaction",
+        "Forced Tool Use",
+        "Model Constraints"
+      ]
     },
     {
       "id": 11,
@@ -190,7 +240,12 @@
       "explanation": "'When using prompt caching, changes to the tool_choice parameter will invalidate cached message blocks. Tool definitions and system prompts remain cached, but message content must be reprocessed.' This matches the caching invalidation table, where 'Tool choice → invalidates messages cache only'.\n\n**Why the others are wrong**\n\n- **B.** That is what changing tool DEFINITIONS does — invalidating tools, system, and messages.\n- **C.** There is a documented effect.\n- **D.** TTL is set by cache_control, not by tool_choice.\n\nThe design implication: switching tool_choice per request in an agentic loop has a real, repeated cost. If you need forcing only sometimes, consider whether prompting under auto would do.",
       "examTrick": "tool_choice change = messages cache only. tool DEFINITIONS change = all three levels. Know the blast radii.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Cache Invalidation", "tool_choice", "Loop Cost"]
+      "tags": [
+        "NEW TOPIC",
+        "Cache Invalidation",
+        "tool_choice",
+        "Loop Cost"
+      ]
     },
     {
       "id": 12,
@@ -207,7 +262,12 @@
       "explanation": "'Combine tool_choice: {\"type\": \"any\"} with strict tool use to guarantee both that one of your tools will be called AND that the tool inputs strictly follow your schema. Set strict: true on your tool definitions to enable schema validation.'\n\n**Why the others are wrong**\n\n- **B.** strict validates a call that happens; it cannot force one.\n- **C.** Forcing produces a call whose arguments are not guaranteed to conform.\n- **D.** Examples and descriptions improve reliability probabilistically; neither is a guarantee.\n\nThis is the two-orthogonal-guarantees idea stated by the docs themselves, and it is the answer to any exam scenario where a conversational reply or a malformed argument would break a downstream system.",
       "examTrick": "any + strict = both guarantees. Neither alone is sufficient for a downstream system that cannot tolerate either failure.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Combined Guarantees", "strict", "tool_choice any"]
+      "tags": [
+        "NEW TOPIC",
+        "Combined Guarantees",
+        "strict",
+        "tool_choice any"
+      ]
     },
     {
       "id": 13,
@@ -224,7 +284,12 @@
       "explanation": "'When using tools, Claude often comments on what it's doing or responds naturally to the user before calling tools... This natural response style helps users understand what Claude is doing... It's important to note that Claude may use various phrasings and approaches when explaining its actions. Your code should treat these responses like any other assistant-generated text, and not rely on specific formatting conventions.'\n\n**Why the others are wrong**\n\n- **B.** No such marker exists.\n- **C.** The text is normal and expected.\n- **D.** This is a real and common bug: content[0] may be a text block, so a handler must FIND the tool_use block rather than assume its index. The documented examples all search — 'next(block for block in response.content if block.type == \"tool_use\")'.\n\nYou can 'guide the style and content of these responses through your system prompts and by providing <examples> in your prompts.'",
       "examTrick": "Never index content[0] for tool_use — SEARCH the content array by block type. Text often precedes the tool call.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Content Block Parsing", "Handler Robustness", "Common Bug"]
+      "tags": [
+        "NEW TOPIC",
+        "Content Block Parsing",
+        "Handler Robustness",
+        "Common Bug"
+      ]
     },
     {
       "id": 14,
@@ -241,7 +306,12 @@
       "explanation": "The optional properties available on a single tool definition include cache_control, strict, defer_loading, and allowed_callers. defer_loading is the one governing when a schema enters context — the API-side analogue of Claude Code's deferred MCP schemas and tool search.\n\n**Why the others are wrong**\n\n- **B.** cache_control marks the block for prompt caching.\n- **C.** allowed_callers restricts which callers may use the tool.\n- **D.** strict enables schema validation of the tool's inputs.\n\nA client toolset entry 'accepts cache_control and allowed_callers on the entry and sets defer_loading per member' — so a toolset can defer members individually while caching as a unit.",
       "examTrick": "Four optional tool properties: cache_control, strict, defer_loading, allowed_callers. defer_loading is the context-cost lever.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "defer_loading", "Tool Properties", "Context Cost"]
+      "tags": [
+        "NEW TOPIC",
+        "defer_loading",
+        "Tool Properties",
+        "Context Cost"
+      ]
     },
     {
       "id": 15,
@@ -258,7 +328,12 @@
       "explanation": "Two documented problems are present. The generic name and thin description undermine selection: descriptions are 'by far the most important factor', and namespacing 'makes tool selection unambiguous'. The bloated response undermines reasoning: 'Bloated responses waste context and make it harder for Claude to extract what matters.'\n\n**Why the others are wrong**\n\n- **B.** strict and input_examples govern INPUTS; the failure here is in naming, description, and OUTPUT shape.\n- **C.** Forcing a call does not help the model use the result, and more output tokens do not clarify 400 fields.\n- **D.** Directly contradicts the consolidation guidance and would explode both the tool count and the token cost.\n\nThe general lesson: diagnose whether the failure is in selection (name/description) or in use (response shape) — they have different fixes.",
       "examTrick": "Selection failures → name and description. Use-of-result failures → response shaping. Different problems, different fixes.",
       "importance": "Critical",
-      "tags": ["NEW TOPIC", "Root Cause Diagnosis", "Response Shaping", "Naming"]
+      "tags": [
+        "NEW TOPIC",
+        "Root Cause Diagnosis",
+        "Response Shaping",
+        "Naming"
+      ]
     },
     {
       "id": 16,
@@ -275,7 +350,12 @@
       "explanation": "'Anthropic-schema client tools, such as the bash and text editor tools, are declared by a date-versioned type.' The same pattern appears in the server-tool example: {\"type\": \"web_search_20260209\", \"name\": \"web_search\"}. A user-defined tool instead supplies name, description, and input_schema.\n\n**Why the others are wrong**\n\n- **B, C, D.** None matches the documented declaration form.\n\nOne further distinction: 'The computer use and browser use tools are client toolsets: a single entry with no name that declares a fixed set of member tools.' So there are three shapes — user-defined tools, date-versioned single tools, and toolset entries.",
       "examTrick": "Three declaration shapes: user-defined (name+description+input_schema), date-versioned type, and toolset entries with no name.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Anthropic-Schema Tools", "Date-Versioned Type", "Client Toolsets"]
+      "tags": [
+        "NEW TOPIC",
+        "Anthropic-Schema Tools",
+        "Date-Versioned Type",
+        "Client Toolsets"
+      ]
     },
     {
       "id": 17,
@@ -292,7 +372,12 @@
       "explanation": "'Prioritize descriptions, but consider using input_examples for complex tools. Clear descriptions are most important, but for tools with complex inputs, nested objects, or format-sensitive parameters, you can use the input_examples field to provide schema-validated examples.'\n\n**Why the others are wrong**\n\n- **B.** Examples cost 20-200 tokens each and are secondary to descriptions.\n- **C.** strict addresses conformance, not comprehension — a strictly-validated call to the wrong tool is still wrong.\n- **D.** Consolidation is genuinely valuable, but the docs put description quality first as 'by far the most important factor'.\n\nA practical ordering to remember: describe well → consolidate → namespace → shape responses → then add examples and strictness where inputs are genuinely tricky.",
       "examTrick": "Descriptions first, always. input_examples are a targeted supplement for complex or format-sensitive inputs.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Improvement Ordering", "input_examples", "Descriptions First"]
+      "tags": [
+        "NEW TOPIC",
+        "Improvement Ordering",
+        "input_examples",
+        "Descriptions First"
+      ]
     },
     {
       "id": 18,
@@ -309,7 +394,12 @@
       "explanation": "The parameter table states: 'name: The name of the tool. Must match the regex ^[a-zA-Z0-9_-]{1,64}$.' So letters, digits, underscores, and hyphens, between 1 and 64 characters.\n\n**Why the others are wrong**\n\n- **B.** Uppercase is permitted and the limit is 64.\n- **C.** Hyphens are allowed, which JavaScript identifiers do not permit.\n- **D.** There is an explicit regex.\n\nThe 64-character budget is what makes service namespacing practical — github_list_pull_request_comments fits comfortably. It also matters when integrating MCP servers, where Claude Code reports and skips a server whose name contains characters outside letters, numbers, hyphens, and underscores.",
       "examTrick": "^[a-zA-Z0-9_-]{1,64}$ — letters, digits, underscore, hyphen, up to 64 characters.",
       "importance": "Medium",
-      "tags": ["NEW TOPIC", "Name Regex", "Naming Constraints", "MCP Compatibility"]
+      "tags": [
+        "NEW TOPIC",
+        "Name Regex",
+        "Naming Constraints",
+        "MCP Compatibility"
+      ]
     },
     {
       "id": 19,
@@ -326,7 +416,12 @@
       "explanation": "Three documented levers combine. The description should explain 'When it should be used (and when it shouldn't)', which is exactly where a prerequisite belongs. disable_parallel_tool_use prevents the model emitting both calls at once. And the exam objective calls for sequencing 'multi-tool workflows so prerequisite data is obtained before dependent tools are called.'\n\n**Why the others are wrong**\n\n- **B.** Names are weak signals and encode no ordering.\n- **C.** strict validates arguments, not call order.\n- **D.** any forces SOME call — it could force the destructive one.\n\nWorth adding the enforcement note: if the constraint must hold absolutely rather than reliably, that is a PreToolUse hook's job in Claude Code, or your own execution-layer check in an API application. Descriptions influence; code enforces.",
       "examTrick": "Ordering: description prerequisite + disable_parallel_tool_use + turn sequencing. For a hard guarantee, enforce in your execution layer.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "Prerequisite Ordering", "Destructive Tools", "Influence vs Enforce"]
+      "tags": [
+        "NEW TOPIC",
+        "Prerequisite Ordering",
+        "Destructive Tools",
+        "Influence vs Enforce"
+      ]
     },
     {
       "id": 20,
@@ -343,7 +438,12 @@
       "explanation": "Tool selection is driven by descriptions regardless of where the tool comes from. The CCAF objective on improving tool selection reliability names the remedies directly: expanding tool descriptions with use-case examples, input format specifications, and explicit disambiguation guidance for semantically similar tools.\n\n**Why the others are wrong**\n\n- **B.** The server name namespaces the tool but says nothing about when to use it versus a sibling tool on the same server.\n- **C.** MCP defines a transport and a tool interface, not a selection policy — selection is the model's, driven by descriptions.\n- **D.** The opposite is true in Claude Code: 'full schemas stay deferred and Claude loads specific ones on demand via tool search', so the NAME and DESCRIPTION carry even more of the selection burden.\n\nThat last point is the sharp one: under deferred loading, a bad description is all the model has to go on.",
       "examTrick": "Under deferred schemas, the description carries the whole selection decision. Vague MCP descriptions fail exactly like vague API ones.",
       "importance": "High",
-      "tags": ["NEW TOPIC", "MCP Descriptions", "Deferred Loading", "Selection Burden"]
+      "tags": [
+        "NEW TOPIC",
+        "MCP Descriptions",
+        "Deferred Loading",
+        "Selection Burden"
+      ]
     }
   ]
 }

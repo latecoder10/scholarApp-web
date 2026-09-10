@@ -56,9 +56,8 @@ export function resolveCapabilities(env: CapabilityEnv): AppCapabilities {
   const flag = env.ENABLE_AUTHORING?.trim().toLowerCase();
 
   let authoring: boolean;
-  if (flag === "true" || flag === "1") authoring = true;
-  else if (flag === "false" || flag === "0") authoring = false;
-  else authoring = env.NODE_ENV !== "production";
+  if (flag === "false" || flag === "0") authoring = false;
+  else authoring = true;
 
   const hasKey = Boolean(env.GEMINI_API_KEY && env.GEMINI_API_KEY.trim());
 

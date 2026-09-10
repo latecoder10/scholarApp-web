@@ -1,8 +1,8 @@
 {
-  "subject": "Claude CCAF: Prompt Engineering & Extraction",
-  "chapter": "2.6 API Processing Modes & Stateless Conversation State",
+  "subject": "Claude CCAF: Prompt Engineering & Structured Output",
+  "chapter": "4.6 API Processing Modes & Stateless Conversation State",
   "exam": "Claude CCAF",
-  "paper": "Domain-2",
+  "paper": "Domain-4",
   "description": "NEW TOPIC. Choosing the synchronous Messages API versus the asynchronous Message Batches API on latency, blocking behaviour and processing windows; plus why the Messages API is stateless and how multi-turn and tool-use state is maintained. Grounded in the official Claude API documentation.",
   "questions": [
     {
