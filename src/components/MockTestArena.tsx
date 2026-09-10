@@ -765,7 +765,7 @@ export default function MockTestArena({
 
       {/* 2. PRE-EXAM INSTRUCTIONS SCREEN */}
       {activeView === "instructions" && selectedMock && (
-        <div className="max-w-2xl mx-auto bg-white border border-slate-100 rounded-2xl p-8 shadow-sm space-y-6 animate-fade-in">
+        <div className="max-w-2xl mx-auto bg-white border border-slate-100 rounded-2xl p-8 shadow-3xs space-y-6 animate-fade-in">
           
           {/* Header */}
           <div className="border-b border-slate-100 pb-5 text-center space-y-2">
@@ -874,7 +874,7 @@ export default function MockTestArena({
             <button
               onClick={handleStartExam}
               disabled={loadingQuestions}
-              className="inline-flex items-center gap-2 text-xs font-extrabold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-6 py-3 rounded-xl shadow-md transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 px-4 py-2.5 rounded-xl shadow-3xs transition-all cursor-pointer"
             >
               {loadingQuestions ? "Preparing Engine..." : "Initialize Simulation"}
               <ArrowRight className="w-4 h-4 text-white" />
@@ -917,7 +917,7 @@ export default function MockTestArena({
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
             
             {/* Left Column (Main Question panel - Span 3) */}
-            <div className="lg:col-span-3 bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xs flex flex-col justify-between min-h-[500px]">
+            <div className="lg:col-span-3 bg-white border border-slate-100 rounded-2xl p-4 sm:p-6 md:p-8 shadow-3xs flex flex-col justify-between min-h-[500px]">
               
               {/* Question Header Status */}
               <div className="space-y-6">
@@ -1127,7 +1127,7 @@ export default function MockTestArena({
             </div>
             <button
               onClick={handleManualSubmit}
-              className="inline-flex items-center justify-center min-h-11 px-5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold tracking-wide transition-all cursor-pointer shadow-sm shrink-0"
+              className="inline-flex items-center justify-center min-h-11 px-5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer shadow-3xs shrink-0"
             >
               Submit
             </button>
@@ -1430,7 +1430,7 @@ export default function MockTestArena({
               </button>
               <button
                 onClick={confirmSubmit}
-                className="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold font-mono transition-colors cursor-pointer shadow-sm shadow-rose-600/10"
+                className="w-1/2 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer shadow-3xs"
               >
                 YES, SUBMIT EXAM
               </button>

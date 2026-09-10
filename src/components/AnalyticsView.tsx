@@ -649,7 +649,7 @@ export default function AnalyticsView({
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="text-xs font-semibold text-slate-700 bg-white border border-slate-200/90 rounded-lg pl-2.5 pr-7 py-1 cursor-pointer appearance-none shadow-3xs focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                  className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl pl-2.5 pr-7 py-1 cursor-pointer appearance-none shadow-3xs focus:outline-none focus:ring-2 focus:ring-indigo-100"
                 >
                   <option value="readiness">Sort by: Readiness</option>
                   <option value="accuracy">Sort by: Accuracy</option>

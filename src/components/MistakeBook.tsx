@@ -127,7 +127,7 @@ export default function MistakeBook({ progress, selectedExam = "all", onClearMis
               <button
                 type="button"
                 onClick={handlePracticeMistakes}
-                className="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-3xs transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-3xs transition-all cursor-pointer"
               >
                 <Play className="w-3.5 h-3.5 fill-white text-white" />
                 <span>Practice Mistakes ({filteredMistakes.length})</span>
@@ -374,13 +374,13 @@ export default function MistakeBook({ progress, selectedExam = "all", onClearMis
             <div className="flex gap-2 justify-end pt-2">
               <button
                 onClick={() => setShowClearConfirm(false)}
-                className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={executeClearAll}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 Clear All
               </button>

@@ -146,7 +146,7 @@ export default function ContentPackManager({ subjects, onRefreshContent, canUplo
           <span className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
             CURRICULUM ARCHITECTURE
           </span>
-          <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-0.5 flex items-center gap-2.5">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight mt-0.5 flex items-center gap-2.5">
             <Upload className="w-6 h-6 text-indigo-600" /> Content Pack Manager
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">

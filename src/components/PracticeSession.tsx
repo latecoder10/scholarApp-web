@@ -521,7 +521,7 @@ export default function PracticeSession({
               <button
                 onClick={handleSubmit}
                 disabled={!selectedOption || isSubmitting}
-                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all cursor-pointer shadow-3xs"
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-slate-100 disabled:text-slate-400 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-3xs"
               >
                 {isSubmitting ? "Submitting…" : "Submit Answer"}
               </button>
@@ -630,7 +630,7 @@ export default function PracticeSession({
               </button>
               <button
                 onClick={handleNext}
-                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs px-5 py-3 rounded-xl transition-all cursor-pointer shadow-sm shadow-indigo-100"
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-3xs"
               >
                 {currentIndex < questions.length - 1 ? (
                   <>Next Question <ArrowRight className="w-4 h-4" /></>

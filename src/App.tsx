@@ -164,7 +164,7 @@ function SubjectsPage({
   return (
     <div className="space-y-6">
       {/* Breadcrumb matching screenshot */}
-      <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+      <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
         <span>{activeExamConfig.shortName}</span>
         <ChevronRight className="w-3 h-3 text-slate-400" />
         <span className="text-slate-500">SUBJECTS</span>
@@ -172,7 +172,7 @@ function SubjectsPage({
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
-          <h1 className="font-display text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
             Subjects
           </h1>
           <p className="text-slate-500 text-xs">

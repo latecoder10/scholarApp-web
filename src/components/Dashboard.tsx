@@ -417,7 +417,7 @@ export default function Dashboard({
                   <h3 className="text-lg font-bold text-slate-800 font-display">
                     {continueChapter.chapter.name}
                   </h3>
-                  <p className="text-slate-400 text-xs line-clamp-1">
+                  <p className="text-slate-500 text-xs line-clamp-1">
                     {continueChapter.chapter.description || "Pick up where you left off to accelerate your exam readiness."}
                   </p>
                   <div className="flex items-center gap-4 text-xs font-mono text-slate-400 pt-1">

@@ -304,7 +304,7 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
         {/* Left Column: Interactive Mobile Phone Simulator */}
         <div className="lg:col-span-5 flex flex-col items-center">
           <div className="w-full mb-3 px-2">
-            <h3 className="text-sm font-semibold text-slate-700">Live Interactive Mobile Simulator</h3>
+            <h3 className="font-display text-sm font-bold text-slate-900">Live Interactive Mobile Simulator</h3>
             <p className="text-xs text-slate-400 mt-0.5">Try the real app experience</p>
           </div>
 
@@ -535,7 +535,7 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
                           <button
                             disabled={!selectedOpt}
                             onClick={() => setIsAnswered(true)}
-                            className="w-full py-2 bg-indigo-600 disabled:bg-slate-100 disabled:text-slate-400 rounded-lg text-xs font-bold text-white"
+                            className="w-full py-2 bg-indigo-600 disabled:bg-slate-100 disabled:text-slate-400 rounded-xl text-xs font-semibold text-white shadow-3xs"
                           >
                             Submit answer
                           </button>
@@ -755,13 +755,13 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
 
           {/* TAB: Android APK */}
           {selectedTab === "eas-apk" && (
-            <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-6 space-y-5 animate-fadeIn">
+            <div className="bg-white border border-slate-100 shadow-3xs rounded-2xl p-6 space-y-5 animate-fade-in">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                  <AndroidGlyph className="w-5 h-5 text-emerald-600" />
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                  <span className="text-lg">📱</span>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Install the standalone Android APK</h3>
+                  <h3 className="font-display text-base font-bold text-slate-900">Install the standalone Android APK</h3>
                   <p className="text-xs text-slate-500 mt-1">
                     Direct installable build for any Android device — no Google Play Store or Expo account needed.
                   </p>
@@ -816,13 +816,13 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
 
           {/* TAB: Instant Expo Go (Scan & Play) */}
           {selectedTab === "expo-go" && (
-            <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-6 space-y-5 animate-fadeIn">
+            <div className="bg-white border border-slate-100 shadow-3xs rounded-2xl p-6 space-y-5 animate-fade-in">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                  <QrCode className="w-5 h-5 text-indigo-600" />
+                  <span className="text-lg">⚡</span>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Instant Live Run via Expo Go (30 Seconds)</h3>
+                  <h3 className="font-display text-base font-bold text-slate-900">Instant Live Run via Expo Go (30 Seconds)</h3>
                   <p className="text-xs text-slate-500 mt-1">
                     Test the native app on your physical iPhone or Android device instantly without compiling.
                   </p>
@@ -872,13 +872,13 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
 
           {/* TAB: Build from source */}
           {selectedTab === "download" && (
-            <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-6 space-y-5 animate-fadeIn">
+            <div className="bg-white border border-slate-100 shadow-3xs rounded-2xl p-6 space-y-5 animate-fade-in">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                  <Code2 className="w-5 h-5 text-blue-600" />
+                  <span className="text-lg">🔧</span>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">Build the app from source</h3>
+                  <h3 className="font-display text-base font-bold text-slate-900">Build the app from source</h3>
                   <p className="text-xs text-slate-500 mt-1">
                     The complete standalone mobile codebase — all assets, configs, and the same {TOTAL_COUNT.toLocaleString()}-question bundle used on the web — lives in the <code className="font-mono text-slate-700 bg-slate-100 px-1 rounded">mobile/</code> folder of this repository.
                   </p>
@@ -901,8 +901,8 @@ export default function MobileAppHub({ questions = [] }: MobileAppHubProps) {
           )}
 
           {/* Architecture Highlights */}
-          <div className="bg-white border border-slate-100 shadow-sm rounded-2xl p-6">
-            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="bg-white border border-slate-100 shadow-3xs rounded-2xl p-6">
+            <h3 className="font-display text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
               <Cpu className="w-5 h-5 text-slate-400" />
               One Curriculum, Bundled On-Device
             </h3>

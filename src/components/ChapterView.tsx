@@ -390,7 +390,7 @@ export default function ChapterView({ subjectName, chapter, progress, onBack, on
                 <button
                   onClick={() => handleExpandChapter(15)}
                   disabled={expanding || !AI_EXPANSION_ENABLED}
-                  className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-3xs cursor-pointer"
+                  className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all shadow-3xs cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   {expanding ? "Generating…" : "Add 15 Questions"}
